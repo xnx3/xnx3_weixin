@@ -39,6 +39,12 @@ public class WeiXinUtil {
 	private String appSecret;	//AppSecret(应用密钥)
 	private String token;	//用户于微信公众平台双方拟定的令牌Token
 	
+	/**
+	 * 微信基本操作-不涉及小程序。微信小程序使用 {@link XiaoChengXuUtil}
+	 * @param appId AppID(应用ID)
+	 * @param appSecret AppSecret(应用密钥)
+	 * @param token 用户于微信公众平台双方拟定的令牌Token。可为空。
+	 */
 	public WeiXinUtil(String appId, String appSecret, String token) {
 		this.appId = appId;
 		this.appSecret = appSecret;
@@ -229,10 +235,7 @@ public class WeiXinUtil {
 
 	/**
 	 * 接收xml格式消息，用户通过微信公众号发送消息，有服务器接收。这里将微信服务器推送来的消息进行格式化为 {@link MessageReceive}对象
-	 * <br/>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。例如SpringMVC中可以这样写：
-	 * <br/><pre>
-	 * 
-	 * </pre>
+	 * <br/>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。
 	 * @param request 这里便是微信服务器接收到消息后，将消息POST提交过来的请求，会自动从request中取微信post的消息内容
 	 * @return	返回 {@link MessageReceive}
 	 * @throws DocumentException 
