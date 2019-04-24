@@ -440,7 +440,7 @@ public class WeiXinUtil {
 	}
 	
 	/**
-	 * 刷新重新获取 jsapi_ticket
+	 * 刷新重新获取 jsapi_ticket ，其实直接使用 getJsapiTicket() 获取可用的 ticket 即可。
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshJsapiTicket(){
@@ -460,7 +460,7 @@ public class WeiXinUtil {
 	}
 	
 	/**
-	 * JS-SDK 生成 signature 签名
+	 * JS-SDK 生成 signature 签名,可以在页面中直接使用，如分享到朋友圈等
 	 * <b>注意事项:</b>
 	 * <p>1.签名的noncestr和timestamp必须与wx.config中的nonceStr和timestamp相同。</p>
 	 * <p>2.签名用的url必须是调用JS接口页面的完整URL。</p>

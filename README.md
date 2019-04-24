@@ -1,5 +1,4 @@
-# xnx3_weixin
-weixin develop
+# weixin develop
 
 # 开发文档
 #### com.xnx3.weixin.WeiXinUtil
@@ -14,6 +13,10 @@ weixin develop
 - receiveMessage(String messageContent)	接收xml格式消息，用户通过微信公众号发送消息，有服务器接收。这里将微信服务器推送来的消息进行格式化为 {@link MessageReceive}对象
 - autoReplyText()	微信服务器接收消息或者事件后，推送到我们的服务器。我们服务器会自动处理并给微信服务器返回一个响应：微信公众号会自动给这个用户发送一条文字消息
 - joinVerify()	微信公众号开发，需首先填入与微信服务器交互的我方URL地址， 填写的URL需要正确响应微信发送的Token验证。这里便是接入时的验证的作用
+- getJsapiTicket()	获取 JS SDK 的 ticket，可拿来直接使用，拿来的就是有效的
+- refreshJsapiTicket()	刷新重新获取 jsapi_ticket ，其实直接使用 getJsapiTicket() 获取可用的 ticket 即可。
+- getJsSignature()	JS-SDK 生成 signature 签名，可以在页面中直接使用，如分享到朋友圈等
+
 
 #### com.xnx3.weixin.XiaoChengXuUtil
 - jscode2session(String code)	根据code ，获取 openid、session_key 、 unionid
