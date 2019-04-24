@@ -1,7 +1,7 @@
 # weixin develop
 
 # 开发文档
-#### com.xnx3.weixin.WeiXinUtil
+#### com.xnx3.weixin.WeiXinUtil	微信网页开发
 - getAccessToken()	获取当前可用的 access_token (7200秒刷新一次的)
 - getUserInfo(String openId)		通过openId，获取用户的信息
 - getOauth2Url(String redirectUri,String scope,String state)	获取网页授权的URL跳转地址
@@ -18,5 +18,5 @@
 - getJsSignature()	JS-SDK 生成 signature 签名，可以在页面中直接使用，如分享到朋友圈等
 
 
-#### com.xnx3.weixin.XiaoChengXuUtil
+#### com.xnx3.weixin.XiaoChengXuUtil	微信小程序
 - jscode2session(String code)	根据code ，获取 openid、session_key 、 unionid
