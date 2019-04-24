@@ -5,13 +5,19 @@ package com.xnx3.weixin.bean;
  * @author 管雷鸣
  */
 public class AccessToken {
-	//获取到的凭证
+	/**
+	 * 获取到的凭证
+	 */
 	private String access_token;
 	
-	//凭证有效时间，单位：秒
+	/**
+	 * 凭证有效时间，单位：秒
+	 */
 	private int expires_in;
 	
-	//当前access_token获取的时间，Linux时间戳
+	/**
+	 * 当前access_token获取的时间，Linux时间戳
+	 */
 	private int gainTime;	
 	
 	/**

@@ -1,5 +1,9 @@
 package com.xnx3.weixin;
 
+/**
+ * SHA1 加密
+ *
+ */
 public class SHA1 {
 	private final int[] abcde = { 0x67452301, 0xefcdab89, 0x98badcfe,
 			0x10325476, 0xc3d2e1f0 };

@@ -28,7 +28,7 @@ public class Jscode2sessionResultVO extends BaseVO {
 	
 	/**
 	 * 只有绑定了微信开放平台后，才会有这个返回值
-	 * @return
+	 * @return unionid
 	 */
 	public String getUnionid() {
 		return unionid;

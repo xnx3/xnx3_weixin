@@ -17,8 +17,10 @@ import com.xnx3.StringUtil;
 import com.xnx3.net.HttpResponse;
 import com.xnx3.net.HttpUtil;
 import com.xnx3.weixin.bean.AccessToken;
+import com.xnx3.weixin.bean.JsapiTicket;
 import com.xnx3.weixin.bean.MessageReceive;
 import com.xnx3.weixin.bean.MessageReply;
+import com.xnx3.weixin.bean.SignatureBean;
 import com.xnx3.weixin.bean.UserInfo;
 
 /**
@@ -26,15 +28,20 @@ import com.xnx3.weixin.bean.UserInfo;
  * @author 管雷鸣
  */
 public class WeiXinUtil {
-	private static String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";	//获取普通access_token的url
-	private static String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";	//获取用户个人信息的url
-	private static String OAUTH2_URL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect";	//网页授权跳转的url
-	private static String OAUTH2_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code";	//网页授权，获取access_token
-	private static String OAUTH2_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";	//网页授权，获取用户信息
-	private static int ACCESS_TOKEN_DELAY_TIME = 5000;	//access_token获取后使用的时长，单位为秒，官方给出的access_token获取后最大有效时间是7200秒，一个access_token的有效期最大只能是7200秒之内有效，超出后就要重新获取。这里设定获取到access_token后最大持续5000秒，超过后便再次获取新的access_token
+	public static String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";	//获取普通access_token的url
+	public static String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";	//获取用户个人信息的url
+	public static String OAUTH2_URL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect";	//网页授权跳转的url
+	public static String OAUTH2_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code";	//网页授权，获取access_token
+	public static String OAUTH2_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";	//网页授权，获取用户信息
+	public static String JSAPI_TICKET_URL = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi";	//获取jsapi_ticket的接口。jsapi_ticket是公众号用于调用微信JS接口的临时票据，效果同access_token，也是7200秒刷新一次
 	
-	private boolean debug = true;	//调试日志是否打印
+	public static int ACCESS_TOKEN_DELAY_TIME = 5000;	//access_token获取后使用的时长，单位为秒，官方给出的access_token获取后最大有效时间是7200秒，一个access_token的有效期最大只能是7200秒之内有效，超出后就要重新获取。这里设定获取到access_token后最大持续5000秒，超过后便再次获取新的access_token
+	public static int JSAPI_TICKET_DELAY_TIME = 5000;	//jsapi_ticket获取后使用的时长，单位为秒
+	
+	
+	public boolean debug = true;	//调试日志是否打印
 	private AccessToken accessToken;	//持久化access_token数据
+	private JsapiTicket jsapiTicket;	//持久化的 JsapiTicket 数据，用于JS SDK
 	private String appId;	//AppID(应用ID)
 	private String appSecret;	//AppSecret(应用密钥)
 	private String token;	//用户于微信公众平台双方拟定的令牌Token
@@ -86,8 +93,11 @@ public class WeiXinUtil {
 	/**
 	 * 通过openId，获取用户的信息
 	 * @param openId 普通用户的标识，对当前公众号唯一
-	 * @return UserInfo	<li>若返回null，则获取失败
-	 * 					<li>若不为null，先判断其subscribe，若为true，已关注，则可以取到其他的信息
+	 * @return UserInfo	
+	 * 			<ul>		
+	 * 				<li>若返回null，则获取失败</li>
+	 * 				<li>若不为null，先判断其subscribe，若为true，已关注，则可以取到其他的信息</li>
+	 * 			</ul>
 	 */
 	public UserInfo getUserInfo(String openId){
 		HttpUtil httpUtil = new HttpUtil();
@@ -171,7 +181,7 @@ public class WeiXinUtil {
 	
 	/**
 	 * 获取网页授权，获取用户的openid
-	 * @param code 如果用户同意授权，页面将跳转至 redirect_uri/?code=CODE&state=STATE，授权成功会get方式传过来
+	 * @param code 如果用户同意授权，页面将跳转至 redirect_uri&#47;&#63;code=CODE&#38;state=STATE，授权成功会get方式传过来
 	 * @return 用户openid 若为null，则获取失败
 	 */
 	public String getOauth2OpenId(String code){
@@ -190,9 +200,12 @@ public class WeiXinUtil {
 	
 	/**
 	 * 网页授权获取用户的个人信息
-	 * @param code 如果用户同意授权，页面将跳转至 redirect_uri/?code=CODE&state=STATE，授权成功会get方式传过来
-	 * @return	<li>若成功，返回{@link UserInfo} (无 subscribeTime 项)
-	 * 			<li>若失败，返回null
+	 * @param code 如果用户同意授权，页面将跳转至 redirect_uri&#47;&#63;code=CODE&#38;state=STATE，授权成功会get方式传过来
+	 * @return	结果：
+	 * 		<ul>	
+	 * 			<li>若成功，返回{@link UserInfo} (无 subscribeTime 项)</li>
+	 * 			<li>若失败，返回null</li>
+	 * 		</ul>
 	 */
 	public UserInfo getOauth2UserInfo(String code){
 		HttpUtil httpUtil = new HttpUtil();
@@ -235,10 +248,10 @@ public class WeiXinUtil {
 
 	/**
 	 * 接收xml格式消息，用户通过微信公众号发送消息，有服务器接收。这里将微信服务器推送来的消息进行格式化为 {@link MessageReceive}对象
-	 * <br/>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。
+	 * <p>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。</p>
 	 * @param request 这里便是微信服务器接收到消息后，将消息POST提交过来的请求，会自动从request中取微信post的消息内容
 	 * @return	返回 {@link MessageReceive}
-	 * @throws DocumentException 
+	 * @throws DocumentException 异常
 	 */
 	public MessageReceive receiveMessage(HttpServletRequest request) throws DocumentException{
 		StringBuffer jb = new StringBuffer();
@@ -258,16 +271,13 @@ public class WeiXinUtil {
 	
 	/**
 	 * 接收xml格式消息，用户通过微信公众号发送消息，有服务器接收。这里将微信服务器推送来的消息进行格式化为 {@link MessageReceive}对象
-	 * <br/>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。例如SpringMVC中可以这样写：
-	 * <br/><pre>
-	 * 
+	 * <p>通常此会存在于一个Servlet中，用于接收微信服务器推送来的消息。例如SpringMVC中可以这样写：</p>
+	 * <pre>
+	 * 	MessageReceive message = new WeiXinUtil(......).receiveMessage(request);
 	 * </pre>
-	 * @param messageContent 这里便是微信服务器接收到消息后，将消息POST提交过来消息内容，如：
-	 * 		<pre>
-	 * 			<xml><ToUserName><![CDATA[gh_674025ffa56e]]></ToUserName><FromUserName><![CDATA[open_jmQkHQEf8o3xfyjfLjKXTnE]]></FromUserName><CreateTime>1509453449</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[123]]></Content><MsgId>6483053198716493194</MsgId></xml>
-	 * 		</pre>
+	 * @param messageContent 这里便是微信服务器接收到消息后，将消息POST提交过来消息内容
 	 * @return	返回 {@link MessageReceive}
-	 * @throws DocumentException 
+	 * @throws DocumentException 异常
 	 */
 	public MessageReceive receiveMessage(String messageContent) throws DocumentException{
 		MessageReceive mr = new MessageReceive();
@@ -337,7 +347,7 @@ public class WeiXinUtil {
 	
 	/**
 	 * 微信服务器接收消息或者事件后，推送到我们的服务器。我们服务器会自动处理并给微信服务器返回一个响应：微信公众号会自动给这个用户发送一条文字消息
-	 * <br/>相当于：
+	 * <p>相当于：</p>
 	 * <pre>
 	 * 	MessageReply messageReply = new MessageReply(messageReceive.getFromUserName(), messageReceive.getToUserName());
 	 *	messageReply.replyText(response, content);
@@ -354,9 +364,9 @@ public class WeiXinUtil {
 	
 	/**
 	 * 微信公众号开发，需首先填入与微信服务器交互的我方URL地址， 填写的URL需要正确响应微信发送的Token验证。这里便是接入时的验证的作用
-	 * <br/>使用时，如 SpringMVC 中：
-	 * <br/><pre>
-	 * 	@RequestMapping("weixin")
+	 * <p>使用时，如 SpringMVC 中：</p>
+	 * <pre>
+	 * 	&#64;RequestMapping(&quot;weixin&quot;)
 	 *	public void verify(HttpServletRequest request, HttpServletResponse response){
 	 *		WeiXinUtil.joinVerify(request, response);
 	 *	}
@@ -394,6 +404,81 @@ public class WeiXinUtil {
 		}
 		out.flush();
 		out.close();
+	}
+	
+	
+	/**
+	 * 获取 JS SDK 的 ticket
+	 * @return 当前可用的 ticket
+	 */
+	public JsapiTicket getJsapiTicket(){
+		boolean refreshToken = false;	//需重新刷新获取token，默认是不需要
+		
+		if(jsapiTicket == null){
+			jsapiTicket = new JsapiTicket();
+			refreshToken = true;
+		}
+		
+		//是否过时，需要重新获取token
+		if(DateUtil.timeForUnix10()>jsapiTicket.getGainTime()+JSAPI_TICKET_DELAY_TIME){
+			refreshToken = true;
+		}
+		
+		//避免一次可能网络中断，连续获取三次，减小误差
+		boolean success = !refreshToken;
+		int i = 0;
+		for (; i < 3 && !success ; i++) {
+			success = refreshJsapiTicket();
+		}
+		
+		if(!success){
+			debug("连续获取"+i+"次 jsapi_ticket ，均失败！" );
+			return null;
+		}else{
+			return jsapiTicket;
+		}
+	}
+	
+	/**
+	 * 刷新重新获取 jsapi_ticket
+	 * @return 获取成功|失败
+	 */
+	private boolean refreshJsapiTicket(){
+		HttpUtil httpUtil = new HttpUtil();
+		HttpResponse httpResponse = httpUtil.get(JSAPI_TICKET_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()));
+		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+		if(json.get("errcode") != null && json.getInt("errcode") == 0){
+			//没有出错，获取成功
+			jsapiTicket.setExpires_in(json.getInt("expires_in"));
+			jsapiTicket.setGainTime(DateUtil.timeForUnix10());
+			jsapiTicket.setTicket(json.getString("ticket"));
+			return true;
+		}else{
+			debug("获取access_token失败！返回值："+httpResponse.getContent());
+			return false;
+		}
+	}
+	
+	/**
+	 * JS-SDK 生成 signature 签名
+	 * <b>注意事项:</b>
+	 * <p>1.签名的noncestr和timestamp必须与wx.config中的nonceStr和timestamp相同。</p>
+	 * <p>2.签名用的url必须是调用JS接口页面的完整URL。</p>
+	 * <p>3.出于安全考虑，开发者必须在服务器端实现签名的逻辑。</p>
+	 * @param url 当前网页的URL，不包含#及其后面部分,如 http://mp.weixin.qq.com?params=value
+	 * @return signature 签名，已处理好，拿来即可直接使用
+	 */
+	public SignatureBean getJsSignature(String url){
+		SignatureBean bean = new SignatureBean();
+		bean.setNoncestr(StringUtil.getRandomAZ(8));
+		bean.setTimestamp(DateUtil.timeForUnix10());
+		bean.setUrl(url);
+		
+		String str = "jsapi_ticket="+getJsapiTicket().getTicket()+"&noncestr="+bean.getNoncestr()+"&timestamp="+bean.getTimestamp()+"&url="+url;
+		String signstr = new SHA1().getDigestOfString(str.getBytes()).toLowerCase();
+		bean.setSignature(signstr);
+		
+		return bean;
 	}
 	
 }

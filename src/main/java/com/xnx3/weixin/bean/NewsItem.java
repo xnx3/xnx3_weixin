@@ -53,8 +53,8 @@ public class NewsItem {
 	}
 	
 	/**
-	 * 获取 xml格式的数据。如 <item>....</item>
-	 * @return
+	 * 获取 xml格式的数据。如 &lt;item&gt;....&lt;/item&gt;
+	 * @return 当前bean对象的xml格式数据
 	 */
 	public String getXMLString(){
 		return "<item>"

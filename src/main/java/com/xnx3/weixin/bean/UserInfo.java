@@ -91,9 +91,12 @@ public class UserInfo {
 	
 	/**
 	 * 用户的性别
-	 * @return <li>男
-	 * 			<li>女
-	 * 			<li>未知
+	 * @return 直接返回性别的字符串描述。返回值：
+	 * 			<ul>
+	 * 				<li>男</li>
+	 * 				<li>女</li>
+	 * 				<li>未知</li>
+	 * 			</ul>
 	 */
 	public String getSexInfo(){
 		if(sex == 1){

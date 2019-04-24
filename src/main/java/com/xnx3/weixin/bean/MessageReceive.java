@@ -85,7 +85,7 @@ public class MessageReceive {
 	
 	
 	/**
-	 * 开发者（接收方）微信号，所有类型消息都有
+	 * @return 开发者（接收方）微信号，所有类型消息都有
 	 */
 	public String getToUserName() {
 		return toUserName;
@@ -93,82 +93,82 @@ public class MessageReceive {
 	
 	/**
 	 * 开发者（接收方）微信号，所有类型消息都有
-	 * @param toUserName
+	 * @param toUserName 微信号的唯一名字
 	 */
 	public void setToUserName(String toUserName) {
 		this.toUserName = toUserName;
 	}
 	
 	/**
-	 * 发送方帐号（一个OpenID），所有类型消息都有
+	 * @return 发送方帐号（一个OpenID），所有类型消息都有
 	 */
 	public String getFromUserName() {
 		return fromUserName;
 	}
 	
 	/**
-	 * 发送方帐号（一个OpenID），所有类型消息都有
+	 * @param fromUserName 发送方帐号（一个OpenID），所有类型消息都有
 	 */
 	public void setFromUserName(String fromUserName) {
 		this.fromUserName = fromUserName;
 	}
 	
 	/**
-	 * 消息创建时间 （整型）10位Linux时间戳，所有类型消息都有
+	 * @return 消息创建时间 （整型）10位Linux时间戳，所有类型消息都有
 	 */
 	public int getCreateTime() {
 		return createTime;
 	}
 	/**
-	 * 消息创建时间 （整型）10位Linux时间戳，所有类型消息都有
+	 * @param createTime 消息创建时间 （整型）10位Linux时间戳，所有类型消息都有
 	 */
 	public void setCreateTime(int createTime) {
 		this.createTime = createTime;
 	}
 	/**
-	 * 消息类型，如text、image，所有类型消息都有，可通过 {@link #MSGTYPE_TEXT}来判断类型是否是某一种
+	 * @return 消息类型，如text、image，所有类型消息都有，可通过 {@link #MSGTYPE_TEXT}来判断类型是否是某一种
 	 */
 	public String getMsgType() {
 		return msgType;
 	}
 	/**
-	 * 消息类型，如text、image，所有类型消息都有，可通过 {@link #MSGTYPE_TEXT}来设置类型
+	 * @param msgType 消息类型，如text、image，所有类型消息都有，可通过 {@link #MSGTYPE_TEXT}来设置类型
 	 */
 	public void setMsgType(String msgType) {
 		this.msgType = msgType;
 	}
 	/**
-	 * 消息id，64位整型，所有类型消息都有
+	 * @return 消息id，64位整型，所有类型消息都有
 	 */
 	public String getMsgId() {
 		return msgId;
 	}
 	/**
-	 * 消息id，64位整型，所有类型消息都有
+	 * @param msgId 消息id，64位整型，所有类型消息都有
 	 */
 	public void setMsgId(String msgId) {
 		this.msgId = msgId;
 	}
 	/**
-	 * 文本消息内容，只限 {@link #MSGTYPE_TEXT}文本消息类型才会有这个值
+	 * @return 文本消息内容，只限 {@link #MSGTYPE_TEXT}文本消息类型才会有这个值
 	 */
 	public String getContent() {
 		return content;
 	}
 	/**
-	 * 文本消息内容，只限 {@link #MSGTYPE_TEXT}文本消息类型才会有这个值
+	 * @param content 文本消息内容，只限 {@link #MSGTYPE_TEXT}文本消息类型才会有这个值
 	 */
 	public void setContent(String content) {
 		this.content = content;
 	}
 	/**
-	 * 图片链接（由系统生成）,只限 {@link #MSGTYPE_IMAGE}图片消息类型才会有这个值
+	 * @return 图片链接（由系统生成）,只限 {@link #MSGTYPE_IMAGE}图片消息类型才会有这个值
 	 */
 	public String getPicUrl() {
 		return picUrl;
 	}
 	/**
-	 * 图片链接（由系统生成）,只限 {@link #MSGTYPE_IMAGE}图片消息类型才会有这个值
+	 * @param picUrl 图片链接（由系统生成）,只限 {@link #MSGTYPE_IMAGE}图片消息类型才会有这个值
 	 */
 	public void setPicUrl(String picUrl) {
 		this.picUrl = picUrl;
@@ -211,7 +211,7 @@ public class MessageReceive {
 	}
 	
 	/**
-	 * 返回值的是否订阅，可用 {@value #EVENT_SUBSCRIBE} {@value #EVENT_UNSUBSCRIBE} 来进行判断
+	 * @return 返回值的是否订阅，可用 {@value #EVENT_SUBSCRIBE} {@value #EVENT_UNSUBSCRIBE} 来进行判断
 	 */
 	public String getEvent() {
 		return event;
@@ -226,7 +226,7 @@ public class MessageReceive {
 	}
 
 	/**
-	 * 微信服务器给我们发送的消息体
+	 * @return 微信服务器给我们发送的消息体
 	 */
 	public String getReceiveBody() {
 		return receiveBody;
@@ -234,13 +234,14 @@ public class MessageReceive {
 
 	/**
 	 * 微信服务器给我们发送的消息体
+	 * @param receiveBody 微信发送过来的消息体
 	 */
 	public void setReceiveBody(String receiveBody) {
 		this.receiveBody = receiveBody;
 	}
 
 	/**
-	 * 事件key值，是一个32位无符号整数，即创建二维码时的二维码scene_id
+	 * @return 事件key值，是一个32位无符号整数，即创建二维码时的二维码scene_id
 	 */
 	public String getEventKey() {
 		return eventKey;
@@ -251,7 +252,7 @@ public class MessageReceive {
 	}
 
 	/**
-	 * 二维码的ticke，可以用来换取二维码图片
+	 * @return 二维码的ticke，可以用来换取二维码图片
 	 */
 	public String getTicket() {
 		return ticket;

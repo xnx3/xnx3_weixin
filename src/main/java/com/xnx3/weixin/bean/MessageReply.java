@@ -10,10 +10,6 @@ import com.xnx3.DateUtil;
 
 /**
  * 被动回复用户消息
- * <br/>使用如：
- * <pre>
- * 		
- * </pre>
  * @author 管雷鸣
  */
 public class MessageReply {
@@ -32,7 +28,7 @@ public class MessageReply {
 
 	/**
 	 * 向微信服务器进行文字回复（MsgType=text）的XML格式字符串，可以将此直接回复微信服务器即可达到回复效果。
-	 * <br/>此项即向微信服务器自动回复xml
+	 * <p>此项即向微信服务器自动回复xml</p>
 	 * @param response {@link HttpServletResponse}响应，输出返回值给微信服务器。
 	 * @param content 微信自动回复用户的内容
 	 */
@@ -49,9 +45,9 @@ public class MessageReply {
 	
 	/**
 	 * 向微信服务器进行图文回复（MsgType=news）的XML格式字符串，可以将此直接回复微信服务器即可达到回复效果。
-	 * <br/>此项即向微信服务器自动回复xml
+	 * <p>此项即向微信服务器自动回复xml</p>
 	 * @param response {@link HttpServletResponse}响应，输出返回值给微信服务器。
-	 * @param content 微信自动回复用户的内容
+	 * @param itemList 微信自动回复用户的图文内容列表
 	 */
 	public void replyNews(HttpServletResponse response, List<NewsItem> itemList){
 		String items = "";
@@ -75,7 +71,7 @@ public class MessageReply {
 	
 	/**
 	 * 微信公众号回复给咨询者。 这里需要自己组合返回的 xml
-	 * @param response
+	 * @param response {@link HttpServletResponse}
 	 * @param text 回复微信服务器的 xml 格式数据
 	 */
 	public void reply(HttpServletResponse response, String text){
