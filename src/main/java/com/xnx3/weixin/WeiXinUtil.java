@@ -11,11 +11,11 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import net.sf.json.JSONObject;
+import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
 import com.xnx3.Lang;
 import com.xnx3.StringUtil;
 import com.xnx3.net.HttpResponse;
-import com.xnx3.net.HttpUtil;
 import com.xnx3.weixin.bean.AccessToken;
 import com.xnx3.weixin.bean.JsapiTicket;
 import com.xnx3.weixin.bean.MessageReceive;
@@ -24,10 +24,10 @@ import com.xnx3.weixin.bean.SignatureBean;
 import com.xnx3.weixin.bean.UserInfo;
 
 /**
- * 微信基本操作-不涉及小程序。微信小程序使用 {@link XiaoChengXuUtil}
+ * 微信基本操作-不涉及小程序。微信小程序使用 {@link WeiXinAppletUtil}
  * @author 管雷鸣
  */
-public class WeiXinUtil {
+public class WeiXinUtil implements java.io.Serializable{
 	public static String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";	//获取普通access_token的url
 	public static String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";	//获取用户个人信息的url
 	public static String OAUTH2_URL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect";	//网页授权跳转的url
@@ -100,7 +100,7 @@ public class WeiXinUtil {
 	 * 			</ul>
 	 */
 	public UserInfo getUserInfo(String openId){
-		HttpUtil httpUtil = new HttpUtil();
+		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		UserInfo userInfo = null;
 		HttpResponse httpResponse = httpUtil.get(USER_INFO_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()).replace("OPENID", openId));
 		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
@@ -136,13 +136,14 @@ public class WeiXinUtil {
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshAccessToken(){
-		HttpUtil httpUtil = new HttpUtil();
+		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		HttpResponse httpResponse = httpUtil.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
 		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
 		if(json.get("errcode") == null){
 			//没有出错，获取access_token成功
 			accessToken.setAccess_token(json.getString("access_token"));
 			accessToken.setExpires_in(json.getInt("expires_in"));
+			accessToken.setGainTime(DateUtil.timeForUnix10());
 			return true;
 		}else{
 			debug("获取access_token失败！返回值："+httpResponse.getContent());
@@ -185,7 +186,7 @@ public class WeiXinUtil {
 	 * @return 用户openid 若为null，则获取失败
 	 */
 	public String getOauth2OpenId(String code){
-		HttpUtil httpUtil = new HttpUtil();
+		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
 		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
 		if(json.get("errcode") == null){
@@ -208,7 +209,7 @@ public class WeiXinUtil {
 	 * 		</ul>
 	 */
 	public UserInfo getOauth2UserInfo(String code){
-		HttpUtil httpUtil = new HttpUtil();
+		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
 		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
 		if(json.get("errcode") == null){
@@ -444,7 +445,7 @@ public class WeiXinUtil {
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshJsapiTicket(){
-		HttpUtil httpUtil = new HttpUtil();
+		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		HttpResponse httpResponse = httpUtil.get(JSAPI_TICKET_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()));
 		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
 		if(json.get("errcode") != null && json.getInt("errcode") == 0){
@@ -479,6 +480,45 @@ public class WeiXinUtil {
 		bean.setSignature(signstr);
 		
 		return bean;
+	}
+	
+
+	/**
+	 * 微信生成带参数的永久二维码，拉取微信的 ticket
+	 * <br/> 微信官方限制最多生成10万永久二维码，慎用
+	 * <br/> 微信接口文档 https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1443433542
+	 * @param scene_str 带参数的二维码，这里便是参数。字符串类型，长度限制为1到64
+	 * @return 若成功，则通过 getInfo() 获取生成的 ticket
+	 */
+	public BaseVO getParamQrcodeTicket(String scene_str){
+		BaseVO vo = new BaseVO();
+		
+		JSONObject json = new JSONObject();
+//		json.put("expire_seconds", 604800);
+		json.put("action_name", "QR_LIMIT_STR_SCENE");
+		
+		JSONObject scene = new JSONObject();
+		JSONObject scene_id_json = new JSONObject();
+		scene_id_json.put("scene_str", scene_str);
+		scene.put("scene", scene_id_json);
+		
+		json.put("action_info", scene);
+		
+		HttpUtil http = new HttpUtil();
+		JSONObject j = http.doPost("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token="+getAccessToken().getAccess_token(), json);
+		System.out.println(j);
+		if(j != null && j.toString().indexOf("\"ticket\"") > -1){
+			vo.setInfo(j.getString("ticket"));
+		}else{
+			vo.setBaseVO(BaseVO.FAILURE, j == null ? "结果为null":j.toString());
+		}
+		return vo;
+	}
+
+	@Override
+	public String toString() {
+		return "WeiXinUtil [debug=" + debug + ", accessToken=" + accessToken + ", jsapiTicket=" + jsapiTicket
+				+ ", appId=" + appId + ", appSecret=" + appSecret + ", token=" + token + "]";
 	}
 	
 }

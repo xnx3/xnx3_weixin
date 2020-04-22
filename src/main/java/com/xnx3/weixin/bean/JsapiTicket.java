@@ -5,7 +5,7 @@ package com.xnx3.weixin.bean;
  * @author 管雷鸣
  *
  */
-public class JsapiTicket {
+public class JsapiTicket implements java.io.Serializable{
 	//获取到的凭证
 	private String ticket;
 	//凭证有效时间，单位：秒

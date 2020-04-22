@@ -4,7 +4,7 @@ package com.xnx3.weixin.bean;
  * 公众平台的API调用所需的普通access_token
  * @author 管雷鸣
  */
-public class AccessToken {
+public class AccessToken implements java.io.Serializable{
 	/**
 	 * 获取到的凭证
 	 */
