@@ -504,13 +504,18 @@ public class WeiXinUtil implements java.io.Serializable{
 		
 		json.put("action_info", scene);
 		
-		HttpUtil http = new HttpUtil();
-		JSONObject j = http.doPost("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token="+getAccessToken().getAccess_token(), json);
-		System.out.println(j);
+//		HttpUtil http = new HttpUtil();
+//		JSONObject j = http.doPost("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token="+getAccessToken().getAccess_token(), json);
+		String result = HttpsUtil.post("https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token="+getAccessToken().getAccess_token(), json.toString());
+		if(result == null || result.length() == 0){
+			vo.setBaseVO(BaseVO.FAILURE, "微信api响应结果为null");
+			return vo;
+		}
+		JSONObject j = JSONObject.fromObject(result);
 		if(j != null && j.toString().indexOf("\"ticket\"") > -1){
 			vo.setInfo(j.getString("ticket"));
 		}else{
-			vo.setBaseVO(BaseVO.FAILURE, j == null ? "结果为null":j.toString());
+			vo.setBaseVO(BaseVO.FAILURE, "异常："+(j == null? "null":j.toString()));
 		}
 		return vo;
 	}

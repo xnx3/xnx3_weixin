@@ -1,5 +1,30 @@
 # weixin develop
 
+# 微信支付快速使用
+### 微信内H5支付
+````
+WeiXinPayUtil pay = new WeiXinPayUtil("wx07f3db3a6bbedf11", "1589606111", "e9caa063361f4c6cb0821a0131086111");
+System.out.println(pay.createOrder(new JSAPIOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do")));
+````
+new WeiXinPayUtil("微信公众号appid", "mch_id商户号", "商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY");
+new JSAPIOrder("openid", 支付金额，单位是分, "支付成功后，微信异步回调")
+
+### 微信小程序支付
+````
+WeiXinPayUtil pay = new WeiXinPayUtil("wx07f3db3a6bbedf11", "1589606211", "e9caa063361f4c6cb0821a0131086111");
+System.out.println(pay.createOrder(new AppletOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do")));
+````
+new WeiXinPayUtil("微信小程序appid", "mch_id商户号", "商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY");
+new AppletOrder("openid", 支付金额，单位是分, "支付成功后，微信异步回调")
+
+### 服务商模式
+比如微信内H5支付
+````
+JSAPIOrder order = new JSAPIOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do");
+order.setSubMchId("1591496141");	//子商户号，就是多加了这个参数的设置
+pay.createOrder(order);
+````
+
 # 开发文档
 #### com.xnx3.weixin.WeiXinUtil	微信网页开发
 - getAccessToken()	获取当前可用的 access_token (7200秒刷新一次的)
@@ -16,7 +41,6 @@
 - getJsapiTicket()	获取 JS SDK 的 ticket，可拿来直接使用，拿来的就是有效的
 - refreshJsapiTicket()	刷新重新获取 jsapi_ticket ，其实直接使用 getJsapiTicket() 获取可用的 ticket 即可。
 - getJsSignature()	JS-SDK 生成 signature 签名，可以在页面中直接使用，如分享到朋友圈等
-
 
 #### com.xnx3.weixin.XiaoChengXuUtil	微信小程序
 - jscode2session(String code)	根据code ，获取 openid、session_key 、 unionid
