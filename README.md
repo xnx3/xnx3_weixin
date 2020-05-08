@@ -3,19 +3,35 @@
 # 微信支付快速使用
 ### 微信内H5支付
 ````
-WeiXinPayUtil pay = new WeiXinPayUtil("wx07f3db3a6bbedf11", "1589606111", "e9caa063361f4c6cb0821a0131086111");
-System.out.println(pay.createOrder(new JSAPIOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do")));
+String appid = "wx07f3db3a6bbedf11";	//微信公众号appid
+String mch_id = "1589606111";			//微信商户平台的商户号
+String key = "e9caa063361f4c6cb0821a0131086111";	//微信商户平台的key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
+String openid = "oa04fwGxDJsbIzzfwp4VPEBNGMdc";		//支付用户的openid
+int money = 1;		//支付的金额，单位是分，这里1便是支付1分
+String notifyUrl = "http://www.xxx.com/weixin/payCallback.json";	//支付成功后，微信异步回调通知咱的服务器url
+System.out.println(new WeiXinPayUtil(appid, mch_id, key).createOrder(new JSAPIOrder(openid, money, notifyUrl)));
 ````
-new WeiXinPayUtil("微信公众号appid", "mch_id商户号", "商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY");
-new JSAPIOrder("openid", 支付金额，单位是分, "支付成功后，微信异步回调")
+执行结果：
+````
+AppletParamsVO [getAppId()=wx07f3db3a6bbedf11, getTimeStamp()=1588945210, getNonceStr()=0e729863fca44b0caf5ac48de5a76c7d, getPackage()=prepay_id=wx08214010014949884fafe1b21925434700, getSignType()=MD5, getPaySign()=5CE85CA39215A29538E60ABC3C2188BF]
+````
+可以直接将执行的结果返回的参数，填入 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6  中调起支付，进行支付操作
 
 ### 微信小程序支付
 ````
-WeiXinPayUtil pay = new WeiXinPayUtil("wx07f3db3a6bbedf11", "1589606211", "e9caa063361f4c6cb0821a0131086111");
-System.out.println(pay.createOrder(new AppletOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do")));
+String appid = "wx07f3db3a6bbedf11";	//微信小程序appid
+String mch_id = "1589606111";			//微信商户平台的商户号
+String key = "e9caa063361f4c6cb0821a0131086111";	//微信商户平台的key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
+String openid = "oa04fwGxDJsbIzzfwp4VPEBNGMdc";		//支付用户的openid
+int money = 1;		//支付的金额，单位是分，这里1便是支付1分
+String notifyUrl = "http://www.xxx.com/weixin/payCallback.json";	//支付成功后，微信异步回调通知咱的服务器url
+System.out.println(new WeiXinPayUtil(appid, mch_id, key).createOrder(new JSAPIOrder(openid, money, notifyUrl)));
 ````
-new WeiXinPayUtil("微信小程序appid", "mch_id商户号", "商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY");
-new AppletOrder("openid", 支付金额，单位是分, "支付成功后，微信异步回调")
+执行结果：
+````
+AppletParamsVO [getAppId()=wx07f3db3a6bbedf11, getTimeStamp()=1588946510, getNonceStr()=dc44329291b7486f9b24a2e586259162, getPackage()=prepay_id=wx082201507619071b70477d201726347800, getSignType()=MD5, getPaySign()=E72F39B197C137D33879530C73A864F6]
+````
+可以直接将执行的结果返回的参数，填入 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6  中调起支付，进行支付操作
 
 ### 服务商模式
 比如微信内H5支付
