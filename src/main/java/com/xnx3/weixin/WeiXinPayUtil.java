@@ -19,18 +19,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import com.xnx3.BaseVO;
-import com.xnx3.DateUtil;
 //import javax.servlet.http.HttpServletRequest;
 //import javax.servlet.http.HttpServletResponse;
 import com.xnx3.Lang;
-import com.xnx3.MD5Util;
 import com.xnx3.StringUtil;
+import com.xnx3.weixin.weixinPay.PayCallBackParamsVO;
 import com.xnx3.weixin.weixinPay.request.AppletOrder;
 import com.xnx3.weixin.weixinPay.request.JSAPIOrder;
 import com.xnx3.weixin.weixinPay.request.Order;
 import com.xnx3.weixin.weixinPay.response.AppletParamsVO;
 import com.xnx3.weixin.weixinPay.response.JSAPIParamsVO;
-import com.xnx3.weixin.weixinPay.response.ParamsVO;
 
 /**
  * 微信支付
@@ -203,7 +201,57 @@ public class WeiXinPayUtil implements java.io.Serializable{
         return map;
     }
     
-    
+    /**
+     * 微信支付成功后，微信服务器异步请求我方服务器的通知
+     * @param notityXml 微信服务器发送到我方服务器的xml数据信息
+     * @return {@link BaseVO}
+     */
+    public PayCallBackParamsVO payCallback(String notityXml){
+    	PayCallBackParamsVO vo = new PayCallBackParamsVO();
+    	
+    	//解析成Map
+    	Map<String,String> map = null;
+        try {
+			map = doXMLParse(notityXml);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        if(map == null){
+        	vo.setBaseVO(BaseVO.FAILURE, "未接收到参数");
+        	return vo;
+        }
+        
+        //判断 支付是否成功
+        if(map.get("result_code") != null && "SUCCESS".equals(map.get("result_code"))){
+        	/*
+        	 * 签名校验
+        	 */
+        	String signStr = map.get("sign");
+        	map.remove("sign");
+        	
+//        	//调用逻辑传入参数按照字段名的 ASCII 码从小到大排序（字典序）
+//            String stringA = formatUrlMap(map, false, false);
+//            //第二步，在stringA最后拼接上key得到stringSignTemp字符串，并对stringSignTemp进行MD5运算，再将得到的字符串所有字符转换为大写，得到sign值signValue。(签名)
+//            String nSign = MD5Util.MD5(stringA+"&key="+shanghu_key).toUpperCase();
+            String sign = SignUtil.generateSign(map, this.key);
+            debug("sign:  "+sign+", param Sign:"+signStr);
+        	if(sign.equalsIgnoreCase(signStr)){
+        		debug("微信回调返回是否支付成功：是");
+        		vo.setParams(map);
+        		//通知微信服务器，已经成功处理，这个数据不要在请求了
+        		vo.setInfo("<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>");
+            	return vo;
+        	}else{
+        		//签名对比出错，警报！可能有人利用接口攻击了
+//        		debug("签名对比出错，警报！可能有人利用接口攻击了-->"+map.toString());
+        		vo.setBaseVO(BaseVO.FAILURE, "签名对比出错");
+        		return vo;
+        	}
+        }else{
+        	vo.setBaseVO(BaseVO.FAILURE, notityXml);
+        	return vo;
+        }
+    }
     
 	/**
 	 * 微信支付的回调
