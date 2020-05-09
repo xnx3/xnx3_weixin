@@ -17,7 +17,6 @@ public abstract class Order {
 	private String notifyUrl;	//通知地址，url，绝对路径，当支付成功后，微信会自动请求这个路径，如： "http://xxxx/wxpay/payCallback.do"
 	private String clientIp;	//客户的ip
 	private String outTradeNo;	//商户订单号，这个订单号是微信那边创建的订单要保存的。如果不设置，默认生成8位数字+字母的随机数
-	private String subMchId;	//微信支付分配的子商户号,服务商模式使用的，平常微信支付用不到这个
 	String tradeType;	//支付类型，如 JSAPI、APP
 	
 	
@@ -75,13 +74,6 @@ public abstract class Order {
 	
 	public String getTradeType() {
 		return tradeType;
-	}
-	
-	public String getSubMchId() {
-		return subMchId;
-	}
-	public void setSubMchId(String subMchId) {
-		this.subMchId = subMchId;
 	}
 	public String getType() {
 		return type;

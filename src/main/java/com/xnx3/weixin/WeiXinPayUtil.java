@@ -42,22 +42,31 @@ public class WeiXinPayUtil implements java.io.Serializable{
 	public static final String UNIFIED_ORDER = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 	
 	private String appid;	//公众号、小程序等appid
-	private String shanghu_mch_id;	//商户号
-	private String shanghu_key;		//商户key,在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
+	private String mch_id;	//商户号
+	private String key;		//商户key,在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
+	private String sub_mch_id = null;	//子商户号。如果这里设置了，那么上面的 mch_id 便是服务商的商户号
 	
 	/**
 	 * 创建微信支付工具
-	 * @param gongzhonghao_appid 小程序ID
-	 * @param shanghu_mch_id 商户号
-	 * @param shanghu_key 商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
+	 * @param appid 小程序appid、微信公众号appid 等
+	 * @param mch_id 商户号，传入如 1591496141
+	 * @param key 商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
 	 */
-	public WeiXinPayUtil(String appid, String shanghu_mch_id, String shanghu_key) {
+	public WeiXinPayUtil(String appid, String mch_id, String key) {
 		this.appid = appid;
-		this.shanghu_mch_id = shanghu_mch_id;
-		this.shanghu_key = shanghu_key;
+		this.mch_id = mch_id;
+		this.key = key;
 	}
 	
-	
+	/**
+	 * 开启服务商模式
+	 * <br/>也就是设置子商户号。如果这里设置了，那么new创建这个类的时候，设置的 mch_id 便是服务商的商户号
+	 * @param sub_mch_id 子商户号，传入如 1591496140 
+	 */
+	public void openServiceProviderMode(String sub_mch_id) {
+		this.sub_mch_id = sub_mch_id;
+	}
+
 	/**
 	 * 创建订单，在微信支付那边创建对应的订单
 	 * @param bean {@link PayOrderBean} 必须赋值里面所有的参数
@@ -76,7 +85,7 @@ public class WeiXinPayUtil implements java.io.Serializable{
         //设置请求参数(公众号、小程序ID)
         paraMap.put("appid", this.appid);
         //设置请求参数(商户号)
-        paraMap.put("mch_id", this.shanghu_mch_id);
+        paraMap.put("mch_id", this.mch_id);
         //设置请求参数(随机字符串)
         paraMap.put("nonce_str", nonceStr);
         //设置请求参数(商品描述)
@@ -89,8 +98,8 @@ public class WeiXinPayUtil implements java.io.Serializable{
         paraMap.put("spbill_create_ip", order.getClientIp());
         //设置请求参数(通知地址)
         paraMap.put("notify_url", order.getNotifyUrl());
-        if(order.getSubMchId() != null && order.getSubMchId().length() > 1){
-        	paraMap.put("sub_mch_id", order.getSubMchId());
+        if(this.sub_mch_id != null && this.sub_mch_id.length() > 0){
+        	paraMap.put("sub_mch_id", this.sub_mch_id);
         }
         //设置请求参数(交易类型)
         paraMap.put("trade_type", order.getTradeType());
@@ -98,19 +107,19 @@ public class WeiXinPayUtil implements java.io.Serializable{
         	//JSAPI、小程序支付 需要有openid参与签名。(在接口文档中 该参数 是否必填项 但是一定要注意 如果交易类型设置成'JSAPI'则必须传入openid)
             paraMap.put("openid", order.getOpenid());
         }
-        String sign = SignUtil.generateSign(paraMap, shanghu_key);
+        String sign = SignUtil.generateSign(paraMap, key);
         //将参数 编写XML格式
         StringBuffer paramBuffer = new StringBuffer();
         paramBuffer.append("<xml>");
         paramBuffer.append("<appid>"+appid+"</appid>");
-        paramBuffer.append("<mch_id>"+shanghu_mch_id+"</mch_id>");
+        paramBuffer.append("<mch_id>"+this.mch_id+"</mch_id>");
         paramBuffer.append("<nonce_str>"+paraMap.get("nonce_str")+"</nonce_str>");
         paramBuffer.append("<sign>"+sign+"</sign>");
         paramBuffer.append("<body>"+order.getBody()+"</body>");
         paramBuffer.append("<out_trade_no>"+paraMap.get("out_trade_no")+"</out_trade_no>");
         paramBuffer.append("<total_fee>"+paraMap.get("total_fee")+"</total_fee>");
-        if(order.getSubMchId() != null && order.getSubMchId().length() > 1){
-        	paramBuffer.append("<sub_mch_id>"+order.getSubMchId()+"</sub_mch_id>");
+        if(this.sub_mch_id != null && this.sub_mch_id.length() > 0){
+        	paramBuffer.append("<sub_mch_id>"+this.sub_mch_id+"</sub_mch_id>");
         }
         paramBuffer.append("<spbill_create_ip>"+paraMap.get("spbill_create_ip")+"</spbill_create_ip>");
         paramBuffer.append("<notify_url>"+paraMap.get("notify_url")+"</notify_url>");
@@ -135,10 +144,10 @@ public class WeiXinPayUtil implements java.io.Serializable{
 						//成功
 						if(order.getType().equals(JSAPIOrder.TYPE)){
 				        	//JSAPI
-							return new JSAPIParamsVO(this.appid, map.get("prepay_id")).generateSign(this.shanghu_key);
+							return new JSAPIParamsVO(this.appid, map.get("prepay_id")).generateSign(this.key);
 				        }else if(order.getType().equals(AppletOrder.TYPE)){
 				        	//小程序
-				        	return new AppletParamsVO(this.appid, map.get("prepay_id")).generateSign(this.shanghu_key);
+				        	return new AppletParamsVO(this.appid, map.get("prepay_id")).generateSign(this.key);
 				        }else{
 				        	//其他。。。
 				        	return BaseVO.failure("目前只有JSAPI、小程序支付，其他的还没加，联系微信 xnx3com 让他来增加吧");

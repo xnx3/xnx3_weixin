@@ -36,9 +36,8 @@ AppletParamsVO [getAppId()=wx07f3db3a6bbedf11, getTimeStamp()=1588946510, getNon
 ### 服务商模式
 比如微信内H5支付
 ````
-JSAPIOrder order = new JSAPIOrder("oa04fwGxDJsbIzzfwp4VPEBNGMdc", 1, "aa.do");
-order.setSubMchId("1591496141");	//子商户号，就是多加了这个参数的设置
-pay.createOrder(order);
+WeiXinPayUtil util = new WeiXinPayUtil(appid, mch_id, key);
+util.openServiceProviderMode("1591496120");	//加了这行，便是开启了服务商模式，传入子商户mch_id
 ````
 
 # 开发文档
