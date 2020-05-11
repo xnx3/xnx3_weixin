@@ -10,14 +10,14 @@ import com.xnx3.StringUtil;
  *
  */
 public abstract class Order {
-	String type;	//跟微信接口方面没有任何关系，只是定义此对象是什么类型的，在什么方面用到，比如 jsapi、小程序、APP等
+	public String type;	//跟微信接口方面没有任何关系，只是定义此对象是什么类型的，在什么方面用到，比如 jsapi、小程序、APP等
 	private String openid;	//要支付用户的openid
 	private String body;	//商品描述， 支付成功显示在微信支付 商品详情中
 	private int totalFee ;	//要支付的总金额，单位：分
 	private String notifyUrl;	//通知地址，url，绝对路径，当支付成功后，微信会自动请求这个路径，如： "http://xxxx/wxpay/payCallback.do"
 	private String clientIp;	//客户的ip
 	private String outTradeNo;	//商户订单号，这个订单号是微信那边创建的订单要保存的。如果不设置，默认生成8位数字+字母的随机数
-	String tradeType;	//支付类型，如 JSAPI、APP
+	public String tradeType;	//支付类型，如 JSAPI、APP
 	
 	
 	public Order() {

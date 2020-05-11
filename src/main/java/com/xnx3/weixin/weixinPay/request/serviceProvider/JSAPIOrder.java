@@ -1,0 +1,41 @@
+package com.xnx3.weixin.weixinPay.request.serviceProvider;
+
+/**
+ * JSAPI 创建订单，订单信息。这里是服务商使用的
+ * @author 管雷鸣
+ *
+ */
+public class JSAPIOrder extends com.xnx3.weixin.weixinPay.request.JSAPIOrder{
+	public static final String TYPE = "JSAPI";		//JSAPI 类型
+	public static final String TRADE_TYPE = "JSAPI";	//支付类型
+	
+	private String subOpenid;	//openid和sub_openid可以选传其中之一，如果选择传sub_openid,则必须传sub_appid。如果获取用户openid是用的服务商的服务号获取的，那么就传入openid；如果获取用户openid使用的是商户认证的小程序获取的，那么就传入这个子的sub_openid
+	
+	public JSAPIOrder(String openid, int money, String notifyUrl) {
+		super(openid, money, notifyUrl);
+		super.tradeType = TRADE_TYPE;
+		super.type = TYPE;
+	}
+	
+
+	public String getSubOpenid() {
+		return subOpenid;
+	}
+	
+	/**
+	 * openid和sub_openid可以选传其中之一，如果选择传sub_openid,则必须传sub_appid。
+	 * <br/>如果获取用户openid是用的服务商的服务号获取的，那么就传入openid；
+	 * <br/>如果获取用户openid使用的是商户认证的小程序获取的，那么就传入这个子的sub_openid
+	 * <br/>执行此方法后，会自动设置openid为空
+	 * @param subOpenid 用户子标识，参见 https://pay.weixin.qq.com/wiki/doc/api/jsapi_sl.php?chapter=9_1
+	 */
+	public void setSubOpenid(String subOpenid) {
+		this.subOpenid = subOpenid;
+		super.setOpenid("");
+	}
+
+	@Override
+	public String toString() {
+		return "JSAPIOrder [subOpenid=" + subOpenid + ", toString()=" + super.toString() + "]";
+	}
+}
