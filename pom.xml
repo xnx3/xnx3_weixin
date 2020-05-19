@@ -62,7 +62,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 		    <version>1.6.1</version>
 		</dependency>
 	
-		
+		<!-- 微信小程序手机号解密用到 -->
+		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+		<dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk15on</artifactId>
+		    <version>1.65</version>
+		</dependency>
+				
     </dependencies>
 
 
