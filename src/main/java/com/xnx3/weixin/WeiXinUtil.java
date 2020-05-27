@@ -4,12 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+//import org.dom4j.Document;
+//import org.dom4j.DocumentException;
+//import org.dom4j.DocumentHelper;
+//import org.dom4j.Element;
 import net.sf.json.JSONObject;
 import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
@@ -254,20 +252,20 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @return	返回 {@link MessageReceive}
 	 * @throws DocumentException 异常
 	 */
-	public MessageReceive receiveMessage(HttpServletRequest request) throws DocumentException{
-		StringBuffer jb = new StringBuffer();
-		String line = null;
-		try {
-			BufferedReader reader = request.getReader();
-			while ((line = reader.readLine()) != null)
-				jb.append(line);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		String messageContent = jb.toString();
-		
-		return receiveMessage(messageContent);
-	}
+//	public MessageReceive receiveMessage(HttpServletRequest request) throws DocumentException{
+//		StringBuffer jb = new StringBuffer();
+//		String line = null;
+//		try {
+//			BufferedReader reader = request.getReader();
+//			while ((line = reader.readLine()) != null)
+//				jb.append(line);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		String messageContent = jb.toString();
+//		
+//		return receiveMessage(messageContent);
+//	}
 	
 	
 	/**
@@ -280,71 +278,71 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @return	返回 {@link MessageReceive}
 	 * @throws DocumentException 异常
 	 */
-	public MessageReceive receiveMessage(String messageContent) throws DocumentException{
-		MessageReceive mr = new MessageReceive();
-		
-		if(messageContent == null || messageContent.length() == 0){
-			//为空，那么直接返回mr，当然，mr中的各项都是空的
-			return mr;
-		}
-		
-		mr.setReceiveBody(messageContent);
-		
-		Document doc = DocumentHelper.parseText(messageContent); 
-		Element e = doc.getRootElement();   
-		
-		if(e.element("CreateTime") != null){
-			mr.setCreateTime(Lang.stringToInt(e.element("CreateTime").getText(), 0));
-		}
-		if(e.element("FromUserName") != null){
-			mr.setFromUserName(e.element("FromUserName").getText());
-		}
-		if(e.element("MsgType") != null){
-			mr.setMsgType(e.element("MsgType").getText());
-		}
-		if(e.element("ToUserName") != null){
-			mr.setToUserName(e.element("ToUserName").getText());
-		}
-		if(e.element("MsgId") != null){
-			mr.setMsgId(e.element("MsgId").getText());
-		}
-		if(e.element("Content") != null){
-			mr.setContent(e.element("Content").getText());
-		}
-		if(e.element("Description") != null){
-			mr.setDescription(e.element("Description").getText());
-		}
-		if(e.element("Format") != null){
-			mr.setFormat(e.element("Format").getText());
-		}
-		if(e.element("MediaId") != null){
-			mr.setMediaId(e.element("MediaId").getText());
-		}
-		if(e.element("PicUrl") != null){
-			mr.setPicUrl(e.element("PicUrl").getText());
-		}
-		if(e.element("ThumbMediaId") != null){
-			mr.setThumbMediaId(e.element("ThumbMediaId").getText());
-		}
-		if(e.element("Title") != null){
-			mr.setTitle(e.element("Title").getText());
-		}
-		if(e.element("Url") != null){
-			mr.setUrl(e.element("Url").getText());
-		}
-		if(e.element("Event") != null){
-			mr.setEvent(e.element("Event").getText());
-		}
-		
-		if(e.element("EventKey") != null){
-			mr.setEventKey(e.element("EventKey").getText());
-		}
-		if(e.element("Ticket") != null){
-			mr.setTicket(e.element("Ticket").getText());
-		}
-		
-		return mr;
-	}
+//	public MessageReceive receiveMessage(String messageContent) throws DocumentException{
+//		MessageReceive mr = new MessageReceive();
+//		
+//		if(messageContent == null || messageContent.length() == 0){
+//			//为空，那么直接返回mr，当然，mr中的各项都是空的
+//			return mr;
+//		}
+//		
+//		mr.setReceiveBody(messageContent);
+//		
+//		Document doc = DocumentHelper.parseText(messageContent); 
+//		Element e = doc.getRootElement();   
+//		
+//		if(e.element("CreateTime") != null){
+//			mr.setCreateTime(Lang.stringToInt(e.element("CreateTime").getText(), 0));
+//		}
+//		if(e.element("FromUserName") != null){
+//			mr.setFromUserName(e.element("FromUserName").getText());
+//		}
+//		if(e.element("MsgType") != null){
+//			mr.setMsgType(e.element("MsgType").getText());
+//		}
+//		if(e.element("ToUserName") != null){
+//			mr.setToUserName(e.element("ToUserName").getText());
+//		}
+//		if(e.element("MsgId") != null){
+//			mr.setMsgId(e.element("MsgId").getText());
+//		}
+//		if(e.element("Content") != null){
+//			mr.setContent(e.element("Content").getText());
+//		}
+//		if(e.element("Description") != null){
+//			mr.setDescription(e.element("Description").getText());
+//		}
+//		if(e.element("Format") != null){
+//			mr.setFormat(e.element("Format").getText());
+//		}
+//		if(e.element("MediaId") != null){
+//			mr.setMediaId(e.element("MediaId").getText());
+//		}
+//		if(e.element("PicUrl") != null){
+//			mr.setPicUrl(e.element("PicUrl").getText());
+//		}
+//		if(e.element("ThumbMediaId") != null){
+//			mr.setThumbMediaId(e.element("ThumbMediaId").getText());
+//		}
+//		if(e.element("Title") != null){
+//			mr.setTitle(e.element("Title").getText());
+//		}
+//		if(e.element("Url") != null){
+//			mr.setUrl(e.element("Url").getText());
+//		}
+//		if(e.element("Event") != null){
+//			mr.setEvent(e.element("Event").getText());
+//		}
+//		
+//		if(e.element("EventKey") != null){
+//			mr.setEventKey(e.element("EventKey").getText());
+//		}
+//		if(e.element("Ticket") != null){
+//			mr.setTicket(e.element("Ticket").getText());
+//		}
+//		
+//		return mr;
+//	}
 	
 	/**
 	 * 微信服务器接收消息或者事件后，推送到我们的服务器。我们服务器会自动处理并给微信服务器返回一个响应：微信公众号会自动给这个用户发送一条文字消息
@@ -357,10 +355,10 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @param messageReceive 使用{@link #receiveMessage(HttpServletRequest)}方法获取到的 {@link MessageReceive}。这里面可以拿到是要回复给哪个用户。
 	 * @param content 微信公众号自动给触发此响应的用户发送的文字消息，这里便是文字消息的内容
 	 */
-	public void autoReplyText(HttpServletResponse response, MessageReceive messageReceive, String content){
-		MessageReply messageReply = new MessageReply(messageReceive.getFromUserName(), messageReceive.getToUserName());
-		messageReply.replyText(response, content);
-	}
+//	public void autoReplyText(HttpServletResponse response, MessageReceive messageReceive, String content){
+//		MessageReply messageReply = new MessageReply(messageReceive.getFromUserName(), messageReceive.getToUserName());
+//		messageReply.replyText(response, content);
+//	}
 	
 	
 	/**
@@ -375,37 +373,37 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @param request {@link HttpServletRequest}
 	 * @param response {@link HttpServletResponse}
 	 */
-	public void joinVerify(HttpServletRequest request, HttpServletResponse response){
-		response.setContentType("text/html");
-		PrintWriter out = null;
-		try {
-			out = response.getWriter();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		String signature = request.getParameter("signature");
-		String timestamp = request.getParameter("timestamp");
-		String nonce = request.getParameter("nonce");
-		String echostr = request.getParameter("echostr");
-		
-		String reSignature = null;
-		try {
-			String[] str = { token, timestamp, nonce };
-			Arrays.sort(str);
-			String bigStr = str[0] + str[1] + str[2];
-			reSignature = new SHA1().getDigestOfString(bigStr.getBytes()).toLowerCase();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (null != reSignature && reSignature.equals(signature)) {
-			//请求来自微信
-			out.print(echostr);
-		} else {
-			out.print("error request! the request is not from weixin server");
-		}
-		out.flush();
-		out.close();
-	}
+//	public void joinVerify(HttpServletRequest request, HttpServletResponse response){
+//		response.setContentType("text/html");
+//		PrintWriter out = null;
+//		try {
+//			out = response.getWriter();
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//		String signature = request.getParameter("signature");
+//		String timestamp = request.getParameter("timestamp");
+//		String nonce = request.getParameter("nonce");
+//		String echostr = request.getParameter("echostr");
+//		
+//		String reSignature = null;
+//		try {
+//			String[] str = { token, timestamp, nonce };
+//			Arrays.sort(str);
+//			String bigStr = str[0] + str[1] + str[2];
+//			reSignature = new SHA1().getDigestOfString(bigStr.getBytes()).toLowerCase();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		if (null != reSignature && reSignature.equals(signature)) {
+//			//请求来自微信
+//			out.print(echostr);
+//		} else {
+//			out.print("error request! the request is not from weixin server");
+//		}
+//		out.flush();
+//		out.close();
+//	}
 	
 	
 	/**

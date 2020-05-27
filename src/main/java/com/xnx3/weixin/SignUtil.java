@@ -40,7 +40,7 @@ public class SignUtil {
      *            true:key转化成小写，false:不转化 
      * @return 
      */  
-    private static String formatUrlMap(Map<String, String> paraMap, boolean urlEncode, boolean keyToLower){  
+    public static String formatUrlMap(Map<String, String> paraMap, boolean urlEncode, boolean keyToLower){  
         String buff = "";  
         Map<String, String> tmpMap = paraMap;  
         try {  

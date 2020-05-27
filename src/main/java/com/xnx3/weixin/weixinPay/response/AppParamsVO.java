@@ -6,24 +6,19 @@ import java.util.TreeMap;
 import com.xnx3.weixin.SignUtil;
 
 /**
- * 微信内H5调起支付，h5 中js传递的一些参数
- * 如果 getResult() - AppletParamsVO.FAILURE == 0， 那么 getInfo() 返回失败原因
+ * APP调起支付，需要的一些参数
+ * 如果 getResult() - AppParamsVO.FAILURE == 0， 那么 getInfo() 返回失败原因
  * @author 管雷鸣
  *
  */
-public class JSAPIParamsVO extends ParamsVO{
-	public JSAPIParamsVO(String appId, String prepay_id) {
-		super();
-		super.setAppId(appId);
-		super.setPackage(prepay_id);
-	}
-	
+public class AppParamsVO extends ParamsVO{
+
 	/**
 	 * 生成签名，并返回新的 {@link JSAPIParamsVO} 对象
 	 * @param key 商户key，签名用的key
 	 * @return 增加了签名的{@link JSAPIParamsVO}
 	 */
-	public JSAPIParamsVO generateSign(String key){
+	public AppParamsVO generateSign(String key){
 		SortedMap<String, String> paraMap = new TreeMap<String, String>();
         //设置请求参数(公众号、小程序ID)
         paraMap.put("appId", super.getAppId());
@@ -42,11 +37,5 @@ public class JSAPIParamsVO extends ParamsVO{
 		return this;
 	}
 
-	@Override
-	public String toString() {
-		return "JSAPIParamsVO [getAppId()=" + getAppId() + ", getTimeStamp()=" + getTimeStamp() + ", getNonceStr()="
-				+ getNonceStr() + ", getPackage()=" + getPackage() + ", getSignType()=" + getSignType()
-				+ ", getPaySign()=" + getPaySign() + ", getResult()=" + getResult() + ", getInfo()=" + getInfo() + "]";
-	}
 	
 }

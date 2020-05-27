@@ -141,7 +141,27 @@ public class WeiXinAppletUtil implements java.io.Serializable{
     		return vo;
     	}
     }
-		    
+	/**
+	 * 获取用户手机号
+	 * @param sessionKey 用户通过小程序code登录成功后获得的sessionKey
+	 * @param requestPayloadString request payload 请求发过来的JSON格式字符串
+	 * @return 手机号。如果 {@link PhoneVO}.getResult 为 PhoneVO.SUCCESS ，那么便是获取成功，可以通过 {@link PhoneVO#getPhone()}获取手机号
+	 */
+	public PhoneVO getPhone(String sessionKey, String requestPayloadString){
+		PhoneVO vo = new PhoneVO();
+		if(requestPayloadString == null || requestPayloadString.length() == 0){
+			vo.setBaseVO(PhoneVO.FAILURE, "requestPayloadString 无数据");
+			return vo;
+		}
+		
+		JSONObject json = JSONObject.fromObject(requestPayloadString);
+		if(json.get("encryptedData") != null){
+			return getPhone(sessionKey, json.getString("encryptedData"), json.getString("iv"));
+		}else{
+			vo.setBaseVO(PhoneVO.FAILURE, "encryptedData 不存在");
+			return vo;
+		}
+	}
 	
 	/**
 	 * 获取最新的普通access_token

@@ -22,11 +22,13 @@ import com.xnx3.BaseVO;
 //import javax.servlet.http.HttpServletRequest;
 //import javax.servlet.http.HttpServletResponse;
 import com.xnx3.Lang;
+import com.xnx3.MD5Util;
 import com.xnx3.StringUtil;
 import com.xnx3.weixin.weixinPay.PayCallBackParamsVO;
 import com.xnx3.weixin.weixinPay.request.AppletOrder;
 import com.xnx3.weixin.weixinPay.request.JSAPIOrder;
 import com.xnx3.weixin.weixinPay.request.Order;
+import com.xnx3.weixin.weixinPay.response.AppParamsVO;
 import com.xnx3.weixin.weixinPay.response.AppletParamsVO;
 import com.xnx3.weixin.weixinPay.response.JSAPIParamsVO;
 
@@ -78,12 +80,10 @@ public class WeiXinPayUtil implements java.io.Serializable{
 
 	/**
 	 * 创建订单，在微信支付那边创建对应的订单
-	 * @param bean {@link PayOrderBean} 必须赋值里面所有的参数
-	 * @param createOrderInterface 订单创建成功后，要执行的操作
+	 * @param order {@link Order} 创建订单的一些参数，比如，如果是 微信H5支付，传入 {@link JSAPIOrder} ,如果是小程序支付，传入 {@link AppletOrder}
 	 */
 	public BaseVO createOrder(Order order){
 		debug("微信 统一下单 接口调用");
-		System.out.println(order.getClass().getName());
 		String subOpenid = null;	//是否使用的是子openid，如果不为null，则使用的是子openid
 		
 		//判断是否是服务商模式，如果是服务商模式，有可能会使用sub_openid
@@ -200,23 +200,57 @@ public class WeiXinPayUtil implements java.io.Serializable{
 				        	return new AppletParamsVO(signAppid, map.get("prepay_id")).generateSign(this.key);
 				        }else{
 				        	//其他。。。
-				        	return BaseVO.failure("目前只有JSAPI、小程序支付，其他的还没加，联系微信 xnx3com 让他来增加吧");
+				        	return voTransform(order, BaseVO.failure("目前只有JSAPI、小程序支付，其他的还没加，联系微信 xnx3com 让他来增加吧"));
 				        }
 					}else{
-						return BaseVO.failure("微信支付，业务结果失败："+response);
+						debug("微信支付，业务结果失败 , response: "+response);
+						return voTransform(order, BaseVO.failure("微信支付，业务结果失败："+response));
 					}
 				}else if (return_code.equals("FAIL")) {
-					return BaseVO.failure("微信支付，创建订单失败："+response);
+					String return_msg = map.get("return_msg");
+					if(return_msg != null && return_msg.indexOf("签名错误") > -1){
+						String stringA = SignUtil.formatUrlMap(paraMap, false, false);
+						debug("签名错误，签名："+sign+", 签名字符串: "+stringA+"&key="+key);
+					}
+					debug("微信支付，创建订单失败, return_code = FAIL , response: "+response);
+					return voTransform(order, BaseVO.failure("微信支付，创建订单失败："+return_msg));
 				}
 			}
-			return BaseVO.failure("创建订单失败，weixin response:"+response);
+			return voTransform(order, BaseVO.failure("创建订单失败，weixin response:"+response));
         } catch (Exception e) {
 			e.printStackTrace();
-			return BaseVO.failure(e.getMessage());
+			return voTransform(order, BaseVO.failure(e.getMessage()));
 		}
 	}
-
-    
+	
+	/**
+	 * 服务于创建订单返回的 vo，将 BaseVO  转化为jsapi、applet、app等vo
+	 * @param order 创建订单时传入的 order
+	 * @param vo {@link BaseVO}
+	 * @return {@link JSAPIParamsVO}、 {@link AppletParamsVO}、 {@link AppParamsVO} 等
+	 */
+    private BaseVO voTransform(Order order, BaseVO vo){
+    	//判断是否是服务商模式，如果是服务商模式，有可能会使用sub_openid
+		String className = order.getClass().getName();
+		if(className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder") || className.equals("com.xnx3.weixin.weixinPay.request.AppletOrder")){
+			AppletParamsVO appletVO = new AppletParamsVO("", "");
+			appletVO.setBaseVO(vo);
+			return appletVO;
+		}else if (className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder") || className.equals("com.xnx3.weixin.weixinPay.request.JSAPIOrder")) {
+			JSAPIParamsVO jsapiVO = new JSAPIParamsVO("", "");
+			jsapiVO.setBaseVO(vo);
+			return jsapiVO;
+		}else if (className.equals("com.xnx3.weixin.weixinPay.request.AppOrder")) {
+			AppParamsVO appVO = new AppParamsVO();
+			appVO.setBaseVO(vo);
+			return appVO;
+		}else{
+			System.out.println("传入的 order : "+order);
+			System.out.println("传入的 order className : "+className);
+			System.out.println("请使用 com.xnx3.weixin.weixinPay.request 包下的 Order 类。比如你是 JSAPI 创建订单，那么你就传入 com.xnx3.weixin.weixinPay.request.JSAPIOrder 对象");
+			return BaseVO.failure("您传入的是什么？order class:"+className);
+		}
+    }
     
     /**
      * 微信支付成功后，微信服务器异步请求我方服务器的通知
@@ -335,7 +369,13 @@ public class WeiXinPayUtil implements java.io.Serializable{
 //        return "failure";
 //    }
 	
+    /**
+     * 是否显示debug的打印信息
+     */
+    public static boolean debug = false;
 	public static void debug(String text){
-		System.out.println(text);
+		if(debug){
+			System.out.println(text);
+		}
 	}
 }
