@@ -9,8 +9,9 @@ String key = "e9caa063361f4c6cb0821a0131086111";	//微信商户平台的key，�
 String openid = "oa04fwGxDJsbIzzfwp4VPEBNGMdc";		//支付用户的openid
 int money = 1;		//支付的金额，单位是分，这里1便是支付1分
 String notifyUrl = "http://www.xxx.com/weixin/payCallback.json";	//支付成功后，微信异步回调通知咱的服务器url
+
 WeiXinPayUtil util = new WeiXinPayUtil(appid, mch_id, key);	////创建微信支付 util，只创建一次即可，可多次调用 util.createOrder(....) 进行创建订单支付
-JSAPIParamsVO vo = (JSAPIParamsVO) util.createOrder(new JSAPIOrder(openid, money, notifyUrl));	////JSAPI 方式调起支付，比如微信网页版，就是这种支付方式。注意，如果是小程序支付，需要传入 AppletOrder ， 用 AppletParamsVO 接收
+JSAPIParamsVO vo = (JSAPIParamsVO) util.createOrder(new com.xnx3.weixin.weixinPay.request.JSAPIOrder(openid, money, notifyUrl));	////JSAPI 方式调起支付，比如微信网页版，就是这种支付方式。注意，如果是小程序支付，需要传入 AppletOrder ， 用 AppletParamsVO 接收
 if(vo.getResult() - JSAPIParamsVO.SUCCESS == 0){
 	//成功，打印出支付用的 timeStamp、nonceStr、Package.....等参数
 	System.out.println(vo);
@@ -26,20 +27,7 @@ JSAPIParamsVO [getAppId()=wxb38da40ed2b11111, getTimeStamp()=1590549279, getNonc
 可以直接将执行的结果返回的参数，填入 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6  中调起支付，进行支付操作
 
 ### 微信小程序支付
-````
-String appid = "wx07f3db3a6bbedf11";	//微信小程序appid
-String mch_id = "1589606111";			//微信商户平台的商户号
-String key = "e9caa063361f4c6cb0821a0131086111";	//微信商户平台的key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
-String openid = "oa04fwGxDJsbIzzfwp4VPEBNGMdc";		//支付用户的openid
-int money = 1;		//支付的金额，单位是分，这里1便是支付1分
-String notifyUrl = "http://www.xxx.com/weixin/payCallback.json";	//支付成功后，微信异步回调通知咱的服务器url
-System.out.println(new WeiXinPayUtil(appid, mch_id, key).createOrder(new JSAPIOrder(openid, money, notifyUrl)));
-````
-执行结果：
-````
-AppletParamsVO [getAppId()=wx07f3db3a6bbedf11, getTimeStamp()=1588946510, getNonceStr()=dc44329291b7486f9b24a2e586259162, getPackage()=prepay_id=wx082201507619071b70477d201726347800, getSignType()=MD5, getPaySign()=E72F39B197C137D33879530C73A864F6]
-````
-可以直接将执行的结果返回的参数，填入 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6  中调起支付，进行支付操作
+[/else/AppletPay.md](/else/AppletPay.md)
 
 ### 服务商模式
 比如微信内H5支付
