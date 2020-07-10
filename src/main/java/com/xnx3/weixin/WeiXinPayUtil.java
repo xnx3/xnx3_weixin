@@ -1,29 +1,10 @@
 package com.xnx3.weixin;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import com.xnx3.BaseVO;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
 import com.xnx3.Lang;
-import com.xnx3.MD5Util;
-import com.xnx3.StringUtil;
 import com.xnx3.weixin.weixinPay.PayCallBackParamsVO;
 import com.xnx3.weixin.weixinPay.request.AppletOrder;
 import com.xnx3.weixin.weixinPay.request.JSAPIOrder;
@@ -41,15 +22,64 @@ public class WeiXinPayUtil implements java.io.Serializable{
 	//统一下单.商户在小程序中先调用该接口在微信支付服务后台生成预支付交易单，返回正确的预支付交易后调起支付。
 	public static final String UNIFIED_ORDER = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 	
-	private String appid;	//公众号、小程序等appid
+	/**
+	 * 公众号、小程序等appid
+	 * @deprecated 使用 {@link #setOfficialAccounts_appid(String)} 、 {@link #setApplet_appid(String)} 代替
+	 */
+	private String appid;
 	private String mch_id;	//商户号
 	private String key;		//商户key,在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
 	private String sub_mch_id = null;	//子商户号。如果这里设置了，那么上面的 mch_id 便是服务商的商户号
 	private String sub_applet_appid = null;	//商户自己的小程序appid。如果这里设置了，那么上面的 appid 便是服务商的微信服务号appid
 	
+	private String officialAccounts_appid;	//微信公众号的appid
+	private String applet_appid;			//微信小程序的appid
+	private String serviceProvider_officialAccounts_appid;	//服务商的微信公众号appid
+	
+	
+	/**
+	 * 微信公众号的appid
+	 */
+	public String getOfficialAccounts_appid() {
+		return officialAccounts_appid;
+	}
+	/**
+	 * 微信公众号的appid
+	 * @param officialAccounts_appid 微信公众号的appid
+	 */
+	public void setOfficialAccounts_appid(String officialAccounts_appid) {
+		this.officialAccounts_appid = officialAccounts_appid;
+	}
+	/**
+	 * 微信小程序的appid
+	 */
+	public String getApplet_appid() {
+		return applet_appid;
+	}
+	/**
+	 * 微信小程序的appid
+	 * @param applet_appid 微信小程序的appid
+	 */
+	public void setApplet_appid(String applet_appid) {
+		this.applet_appid = applet_appid;
+	}
+	
+	/**
+	 * 服务商的微信公众号appid
+	 */
+	public String getServiceProvider_officialAccounts_appid() {
+		return serviceProvider_officialAccounts_appid;
+	}
+	/**
+	 * 服务商的微信公众号appid
+	 * @param serviceProvider_officialAccounts_appid 服务商的微信公众号appid
+	 */
+	public void setServiceProvider_officialAccounts_appid(String serviceProvider_officialAccounts_appid) {
+		this.serviceProvider_officialAccounts_appid = serviceProvider_officialAccounts_appid;
+	}
 	/**
 	 * 创建微信支付工具
-	 * @param appid 小程序appid、微信公众号appid 等
+	 * @param appid 小程序appid、微信公众号appid 等，已废弃
 	 * @param mch_id 商户号，传入如 1591496141
 	 * @param key 商户key，在微信商户平台-帐户设置-安全设置-API安全-API密钥-设置API密钥这个里面设置的KEY
 	 */
@@ -61,7 +91,7 @@ public class WeiXinPayUtil implements java.io.Serializable{
 	
 	/**
 	 * 开启服务商模式，小程序、公众号等都是使用服务商的
-	 * <br/>也就是设置子商户号。如果这里设置了，那么new创建这个类的时候，设置的 mch_id 便是服务商的商户号
+	 * <p>也就是设置子商户号。如果这里设置了，那么new创建这个类的时候，设置的 mch_id 便是服务商的商户号</p>
 	 * @param sub_mch_id 子商户号，传入如 1591496140 
 	 */
 	public void openServiceProviderMode(String sub_mch_id) {
@@ -70,8 +100,8 @@ public class WeiXinPayUtil implements java.io.Serializable{
 	
 	/**
 	 * 设置服务商模式下，商户(用户)自己认证的小程序appid。
-	 * <br/> {@link #openServiceProviderMode(String)} 设置了这个之后，此处才有效
-	 * @param sub_applet_appid
+	 * <p> {@link #openServiceProviderMode(String)} 设置了这个之后，此处才有效</p>
+	 * @param sub_applet_appid 子商户自己的小程序appid
 	 */
 	public void setServiceProviderSubAppletAppid(String sub_applet_appid){
 		this.sub_applet_appid = sub_applet_appid;
@@ -84,23 +114,44 @@ public class WeiXinPayUtil implements java.io.Serializable{
 	 */
 	public BaseVO createOrder(Order order){
 		debug("微信 统一下单 接口调用");
-		String subOpenid = null;	//是否使用的是子openid，如果不为null，则使用的是子openid
+		
+		String appid;	//支付对应的appid
+		String subOpenid = null;	//是否使用的是子openid，服务商模式会有子openid，如果不为null，则使用的是子openid
 		
 		//判断是否是服务商模式，如果是服务商模式，有可能会使用sub_openid
 		String className = order.getClass().getName();
-		if(className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder")){
-			com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder spao = (com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder) order;
-			if(spao.getSubOpenid() != null && spao.getSubOpenid().length() > 0){
-				//使用子openid
-				subOpenid = spao.getSubOpenid();
+		if(className.indexOf("com.xnx3.weixin.weixinPay.request.serviceProvider.") > -1){
+			//是服务商模式，那么appid为服务商的微信服务号appid
+			appid = this.serviceProvider_officialAccounts_appid;
+			
+			if(className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder")){
+				com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder spao = (com.xnx3.weixin.weixinPay.request.serviceProvider.AppletOrder) order;
+				if(spao.getSubOpenid() != null && spao.getSubOpenid().length() > 0){
+					//使用子openid
+					subOpenid = spao.getSubOpenid();
+				}
+			}else if (className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder")) {
+				com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder spjo = (com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder) order;
+				if(spjo.getSubOpenid() != null && spjo.getSubOpenid().length() > 0){
+					//使用子openid
+					subOpenid = spjo.getSubOpenid();
+				}
 			}
-		}else if (className.equals("com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder")) {
-			com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder spjo = (com.xnx3.weixin.weixinPay.request.serviceProvider.JSAPIOrder) order;
-			if(spjo.getSubOpenid() != null && spjo.getSubOpenid().length() > 0){
-				//使用子openid
-				subOpenid = spjo.getSubOpenid();
-			}
+		}else{
+			//不是服务商模式
+			
+			if(order.getType().equals(JSAPIOrder.TYPE)){
+	        	//JSAPI，那么使用公众号的appid
+				appid = this.officialAccounts_appid;
+	        }else if(order.getType().equals(AppletOrder.TYPE)){
+	        	//小程序，使用小程序的appid
+	        	appid = this.applet_appid;
+	        }else{
+	        	//其他。。。
+	        	return voTransform(order, BaseVO.failure("目前只有JSAPI、小程序支付，其他的还没加，联系微信 xnx3com 让他来增加吧"));
+	        }
 		}
+		
 		
         //创建hashmap(用户获得签名)
         SortedMap<String, String> paraMap = new TreeMap<String, String>();
@@ -110,7 +161,7 @@ public class WeiXinPayUtil implements java.io.Serializable{
 //	    String outTradeNo = StringUtil.getRandom09AZ(2)+StringUtil.intTo36(DateUtil.timeForUnix10())+StringUtil.getRandom09AZ(2);
         
         //设置请求参数(公众号、小程序ID)
-        paraMap.put("appid", this.appid);
+        paraMap.put("appid", appid);
         //设置请求参数(商户号)
         paraMap.put("mch_id", this.mch_id);
         //设置请求参数(随机字符串)
@@ -190,10 +241,10 @@ public class WeiXinPayUtil implements java.io.Serializable{
 						
 						if(order.getType().equals(JSAPIOrder.TYPE)){
 				        	//JSAPI
-							return new JSAPIParamsVO(this.appid, map.get("prepay_id")).generateSign(this.key);
+							return new JSAPIParamsVO(appid, map.get("prepay_id")).generateSign(this.key);
 				        }else if(order.getType().equals(AppletOrder.TYPE)){
 				        	//小程序
-				        	String signAppid = this.appid;
+				        	String signAppid = appid;
 				        	if(this.sub_mch_id != null && this.sub_mch_id.length() > 0 && this.sub_applet_appid != null && this.sub_applet_appid.length() > 0){
 								signAppid = this.sub_applet_appid;
 							}
@@ -211,6 +262,7 @@ public class WeiXinPayUtil implements java.io.Serializable{
 					if(return_msg != null && return_msg.indexOf("签名错误") > -1){
 						String stringA = SignUtil.formatUrlMap(paraMap, false, false);
 						debug("签名错误，签名："+sign+", 签名字符串: "+stringA+"&key="+key);
+						debug("可以通过官方签名校验： https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=20_1   验证签名是否对应起来。如果签名没问题，那可能是微信商户的key，重新生成一个新的key使用就好了。");
 					}
 					debug("微信支付，创建订单失败, return_code = FAIL , response: "+response);
 					return voTransform(order, BaseVO.failure("微信支付，创建订单失败："+return_msg));

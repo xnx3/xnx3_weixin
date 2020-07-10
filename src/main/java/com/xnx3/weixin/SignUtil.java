@@ -38,7 +38,7 @@ public class SignUtil {
      * @param urlEncode   是否需要URLENCODE 
      * @param keyToLower    是否需要将Key转换为全小写 
      *            true:key转化成小写，false:不转化 
-     * @return 
+     * @return 生成的url参数串
      */  
     public static String formatUrlMap(Map<String, String> paraMap, boolean urlEncode, boolean keyToLower){  
         String buff = "";  

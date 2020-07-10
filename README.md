@@ -1,7 +1,7 @@
-# weixin develop
+# 微信常用工具类
 
-# 微信支付快速使用
-### 微信内H5支付
+# 微信支付
+### 微信内网页H5支付
 ````
 String appid = "wx07f3db3a6bbedf11";	//微信公众号appid
 String mch_id = "1589606111";			//微信商户平台的商户号
@@ -29,16 +29,10 @@ JSAPIParamsVO [getAppId()=wxb38da40ed2b11111, getTimeStamp()=1590549279, getNonc
 ### 微信小程序支付
 [/else/AppletPay.md](/else/AppletPay.md)
 
-### 服务商模式
-比如微信内H5支付
-````
-WeiXinPayUtil util = new WeiXinPayUtil(appid, mch_id, key);
-util.openServiceProviderMode("1591496120");	//加了这行，便是开启了服务商模式，传入子商户mch_id
-````
 
 # 开发文档
 #### com.xnx3.weixin.WeiXinUtil	微信网页开发
-- getAccessToken()	获取当前可用的 access_token (7200秒刷新一次的)
+- getAccessToken()	获取当前可用的 access_token (会7200秒自动刷新一次)
 - getUserInfo(String openId)		通过openId，获取用户的信息
 - getOauth2Url(String redirectUri,String scope,String state)	获取网页授权的URL跳转地址
 - getOauth2SimpleUrl(String redirectUri)	获取网页授权的URL跳转地址，弹出授权页面，可通过openid拿到昵称、性别、所在地。并且，即使在未关注的情况下，只要用户授权，也能获取其信息
@@ -53,5 +47,5 @@ util.openServiceProviderMode("1591496120");	//加了这行，便是开启了服�
 - refreshJsapiTicket()	刷新重新获取 jsapi_ticket ，其实直接使用 getJsapiTicket() 获取可用的 ticket 即可。
 - getJsSignature()	JS-SDK 生成 signature 签名，可以在页面中直接使用，如分享到朋友圈等
 
-#### com.xnx3.weixin.XiaoChengXuUtil	微信小程序
-- jscode2session(String code)	根据code ，获取 openid、session_key 、 unionid
+#### com.xnx3.weixin.WeiXinAppletUtil	微信小程序
+- loginByCode(String code)	根据code ，获取 openid、session_key 、 unionid

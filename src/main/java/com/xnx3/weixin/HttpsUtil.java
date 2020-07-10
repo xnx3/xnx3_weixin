@@ -18,7 +18,7 @@ public class HttpsUtil {
 	 * post请求，返回响应的内容
      * @param url 请求url
      * @param data post 请求发送的data信息。这里不是key-value的形式，而是直接提交字符串到url
-     * @param 响应的内容
+     * @return 响应的内容
     */
     public static String post(String url, String data){
         try {

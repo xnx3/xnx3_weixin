@@ -1,9 +1,5 @@
 package com.xnx3.weixin;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
 //import org.dom4j.Document;
 //import org.dom4j.DocumentException;
 //import org.dom4j.DocumentHelper;
@@ -11,18 +7,15 @@ import java.util.Arrays;
 import net.sf.json.JSONObject;
 import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
-import com.xnx3.Lang;
 import com.xnx3.StringUtil;
 import com.xnx3.net.HttpResponse;
 import com.xnx3.weixin.bean.AccessToken;
 import com.xnx3.weixin.bean.JsapiTicket;
-import com.xnx3.weixin.bean.MessageReceive;
-import com.xnx3.weixin.bean.MessageReply;
 import com.xnx3.weixin.bean.SignatureBean;
 import com.xnx3.weixin.bean.UserInfo;
 
 /**
- * 微信基本操作-不涉及小程序。微信小程序使用 {@link WeiXinAppletUtil}
+ * 微信公众号的基本操作-不涉及小程序。微信小程序使用 {@link WeiXinAppletUtil}
  * @author 管雷鸣
  */
 public class WeiXinUtil implements java.io.Serializable{
@@ -49,11 +42,22 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @param appId AppID(应用ID)
 	 * @param appSecret AppSecret(应用密钥)
 	 * @param token 用户于微信公众平台双方拟定的令牌Token。可为空。
+	 * @deprecated 请使用 {@link WeiXinUtil#WeiXinUtil(String, String)}
 	 */
 	public WeiXinUtil(String appId, String appSecret, String token) {
 		this.appId = appId;
 		this.appSecret = appSecret;
 		this.token = token;
+	}
+	
+	/**
+	 * 微信公众号的基本操作-不涉及小程序。微信小程序使用 {@link XiaoChengXuUtil}
+	 * @param appId AppID(应用ID)
+	 * @param appSecret AppSecret(应用密钥)
+	 */
+	public WeiXinUtil(String appId, String appSecret) {
+		this.appId = appId;
+		this.appSecret = appSecret;
 	}
 	
 	/**
@@ -144,6 +148,10 @@ public class WeiXinUtil implements java.io.Serializable{
 			accessToken.setGainTime(DateUtil.timeForUnix10());
 			return true;
 		}else{
+			int errcode = json.getInt("errcode");
+			if(errcode - 40164 == 0){
+				debug("需要登录微信公众平台，找到左侧菜单的开发-基本配置 ，点开，找到其中的 公众号开发信息 - IP白名单，将您的ip加入其中，即可解决此错误");
+			}
 			debug("获取access_token失败！返回值："+httpResponse.getContent());
 			return false;
 		}
