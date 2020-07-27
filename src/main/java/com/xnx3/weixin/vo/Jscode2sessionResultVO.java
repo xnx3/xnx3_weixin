@@ -3,7 +3,7 @@ package com.xnx3.weixin.vo;
 import com.xnx3.BaseVO;
 
 /**
- * 根据 code，获取 session_key、openid、unionid，这里是其接口的返回值
+ * 微信小程序登录，根据 code，获取 session_key、openid、unionid，这里是其接口的返回值。
  * @author 管雷鸣
  *
  */

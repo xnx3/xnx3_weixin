@@ -1,13 +1,19 @@
 package com.xnx3.weixin;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.xnx3.Lang;
 import com.xnx3.MD5Util;
+import com.xnx3.weixin.vo.H5ShareVO;
 
 /**
  * 签名生成相关
@@ -28,7 +34,53 @@ public class SignUtil {
         String sign = MD5Util.MD5(stringA+"&key="+key).toUpperCase();
         return sign;
 	}
-
+	
+	/**
+	 * 微信H5分享给好友、朋友圈 等用到。这里返回的vo只是赋值 timestamp、 nonceStr、signature 三个
+	 * @param jsapi_ticket 
+	 * @param url
+	 * @return
+	 */
+	public static H5ShareVO generateSign(String jsapi_ticket, String url){
+		H5ShareVO vo = new H5ShareVO();
+		vo.setNonceStr(Lang.uuid());
+		
+		Map<String, String> ret = new HashMap<String, String>();
+		String string1;
+		String signature = "";
+		
+		//注意这里参数名必须全部小写，且必须有序
+		string1 = "jsapi_ticket=" + jsapi_ticket +
+		  "&noncestr=" + vo.getNonceStr() +
+		  "&timestamp=" + vo.getTimestamp() +
+		  "&url=" + url;
+		
+		try{
+		    MessageDigest crypt = MessageDigest.getInstance("SHA-1");
+			crypt.reset();
+			crypt.update(string1.getBytes("UTF-8"));
+		    signature = byteToHex(crypt.digest());
+		}catch (NoSuchAlgorithmException e){
+		    e.printStackTrace();
+		}catch (UnsupportedEncodingException e){
+		    e.printStackTrace();
+		}
+		
+		vo.setSignature(signature);
+		return vo;
+	}
+	
+	private static String byteToHex(final byte[] hash) {
+        Formatter formatter = new Formatter();
+        for (byte b : hash)
+        {
+            formatter.format("%02x", b);
+        }
+        String result = formatter.toString();
+        formatter.close();
+        return result;
+    }
+	
     /** 
      *  
      * 方法用途: 对所有传入参数按照字段名的 ASCII 码从小到大排序（字典序），并且生成url参数串<br> 
