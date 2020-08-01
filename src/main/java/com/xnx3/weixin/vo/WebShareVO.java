@@ -8,14 +8,13 @@ import com.xnx3.DateUtil;
  * @author 管雷鸣
  *
  */
-public class H5ShareVO extends BaseVO{
+public class WebShareVO extends BaseVO{
 	private String appId;		//公众号的唯一标识
-	private String url;			//要分享出去的url
 	private Integer timestamp; 	//生成签名的时间戳
 	private String nonceStr;	//生成签名的随机串
 	private String signature;	//签名
 	
-	public H5ShareVO() {
+	public WebShareVO() {
 		this.timestamp = DateUtil.timeForUnix10(); 
 	}
 	

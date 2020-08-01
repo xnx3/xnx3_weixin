@@ -8,12 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.xnx3.Lang;
 import com.xnx3.MD5Util;
-import com.xnx3.weixin.vo.H5ShareVO;
+import com.xnx3.weixin.vo.WebShareVO;
 
 /**
  * 签名生成相关
@@ -41,11 +40,10 @@ public class SignUtil {
 	 * @param url
 	 * @return
 	 */
-	public static H5ShareVO generateSign(String jsapi_ticket, String url){
-		H5ShareVO vo = new H5ShareVO();
+	public static WebShareVO generateSign(String jsapi_ticket, String url){
+		WebShareVO vo = new WebShareVO();
 		vo.setNonceStr(Lang.uuid());
 		
-		Map<String, String> ret = new HashMap<String, String>();
 		String string1;
 		String signature = "";
 		

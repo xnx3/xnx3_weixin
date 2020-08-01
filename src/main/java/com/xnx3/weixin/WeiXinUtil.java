@@ -29,11 +29,20 @@ public class WeiXinUtil implements java.io.Serializable{
 	public static int ACCESS_TOKEN_DELAY_TIME = 5000;	//access_token获取后使用的时长，单位为秒，官方给出的access_token获取后最大有效时间是7200秒，一个access_token的有效期最大只能是7200秒之内有效，超出后就要重新获取。这里设定获取到access_token后最大持续5000秒，超过后便再次获取新的access_token
 	public static int JSAPI_TICKET_DELAY_TIME = 5000;	//jsapi_ticket获取后使用的时长，单位为秒
 	
-	
+	/**
+	 * 持久化的 JsapiTicket 数据，用于JS SDK。
+	 * 请使用 {@link #getJsapiTicket()} 获取 jsapi_ticket ，会自动判断时间是否过期，过期会自动获取新的
+	 * @deprecated
+	 */
+	public JsapiTicket jsapiTicket;	
+	/**
+	 * 持久化access_token数据
+	 * 请使用 {@link #getAccessToken()} 获取 access_token ，会自动判断时间是否过期，过期会自动获取新的
+	 * @deprecated
+	 */
+	public AccessToken accessToken;
 	public boolean debug = true;	//调试日志是否打印
-	private AccessToken accessToken;	//持久化access_token数据
-	private JsapiTicket jsapiTicket;	//持久化的 JsapiTicket 数据，用于JS SDK
-	private String appId;	//AppID(应用ID)
+	public String appId;	//AppID(应用ID)
 	private String appSecret;	//AppSecret(应用密钥)
 	private String token;	//用户于微信公众平台双方拟定的令牌Token
 	
@@ -73,7 +82,7 @@ public class WeiXinUtil implements java.io.Serializable{
 		}
 		
 		//是否过时，需要重新获取token
-		if(DateUtil.timeForUnix10()>accessToken.getGainTime()+ACCESS_TOKEN_DELAY_TIME){
+		if(DateUtil.timeForUnix10()>(accessToken.getGainTime()+ACCESS_TOKEN_DELAY_TIME)){
 			refreshToken = true;
 		}
 		
@@ -146,6 +155,7 @@ public class WeiXinUtil implements java.io.Serializable{
 			accessToken.setAccess_token(json.getString("access_token"));
 			accessToken.setExpires_in(json.getInt("expires_in"));
 			accessToken.setGainTime(DateUtil.timeForUnix10());
+			debug("refreshAccessToken:"+accessToken.toString()+", appid:"+this.appId);
 			return true;
 		}else{
 			int errcode = json.getInt("errcode");
@@ -427,7 +437,7 @@ public class WeiXinUtil implements java.io.Serializable{
 		}
 		
 		//是否过时，需要重新获取token
-		if(DateUtil.timeForUnix10()>jsapiTicket.getGainTime()+JSAPI_TICKET_DELAY_TIME){
+		if(DateUtil.timeForUnix10()>(jsapiTicket.getGainTime()+JSAPI_TICKET_DELAY_TIME)){
 			refreshToken = true;
 		}
 		
@@ -459,6 +469,7 @@ public class WeiXinUtil implements java.io.Serializable{
 			jsapiTicket.setExpires_in(json.getInt("expires_in"));
 			jsapiTicket.setGainTime(DateUtil.timeForUnix10());
 			jsapiTicket.setTicket(json.getString("ticket"));
+			debug("refreshJsapiTicket:"+jsapiTicket.toString());
 			return true;
 		}else{
 			debug("获取access_token失败！返回值："+httpResponse.getContent());
