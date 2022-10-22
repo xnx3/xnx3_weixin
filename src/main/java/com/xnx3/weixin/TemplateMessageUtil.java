@@ -14,7 +14,7 @@ import net.sf.json.JSONObject;
  * <p>官方网址</p>
  * <p>https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#1</p>
  * <p>https://mp.weixin.qq.com/advanced/tmplmsg?action=faq&token=1663114&lang=zh_CN</p>
- *
+ * @deprecated
  */
 public class TemplateMessageUtil {
 	static HttpsUtil https;
@@ -126,10 +126,14 @@ public class TemplateMessageUtil {
 				Object errcode = resultJson.get("errcode");
 				if(errcode != null && errcode.toString().equals("0")){
 					Object msgid = resultJson.get("msgid");
-					System.out.println(msgid);
 					if(msgid != null){
 						//成功
 						return BaseVO.success(msgid.toString());
+					}
+				}else {
+					//失败
+					if(errcode != null && errcode.toString().equals("40013")){
+						return BaseVO.failure("公众号需要和小程序关联，才可以进行跳转，不然即使写了跳转参数，也直接会报错 invalid appid. 接口响应："+hr.getContent());
 					}
 				}
 				

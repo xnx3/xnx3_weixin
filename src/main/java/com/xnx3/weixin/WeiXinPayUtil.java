@@ -275,6 +275,8 @@ public class WeiXinPayUtil implements java.io.Serializable{
 		}
 	}
 	
+
+	
 	/**
 	 * 服务于创建订单返回的 vo，将 BaseVO  转化为jsapi、applet、app等vo
 	 * @param order 创建订单时传入的 order

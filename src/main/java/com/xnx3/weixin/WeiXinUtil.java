@@ -5,6 +5,9 @@ package com.xnx3.weixin;
 //import org.dom4j.DocumentHelper;
 //import org.dom4j.Element;
 import net.sf.json.JSONObject;
+
+import java.util.Map;
+
 import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
 import com.xnx3.StringUtil;
@@ -537,6 +540,56 @@ public class WeiXinUtil implements java.io.Serializable{
 		return vo;
 	}
 
+	
+	/**
+	 * 发送微信公众号服务号的模板消息
+	 * <p><b>注：url和miniprogram都是非必填字段，若都不传则模板无跳转；若都传，会优先跳转至小程序。开发者可根据实际需要选择其中一种跳转方式即可。当用户的微信客户端版本不支持跳小程序时，将会跳转至url。</b></p>
+	 * @param accessToken 通过 appId 跟 appSecret 得到的 access_token
+	 * @param openid 接收的用户openid，如 oa04fwGxDJsbIzzfwp4VPEBNGM21
+	 * @param templateId 模板id，如 3YV61HeNU6k59PfswwGs8zDCQxLUr2CaHre5GWyHu61
+	 * @param dataMap 模板消息的信息。如 
+	 * 	<pre>
+	 * 		Map&lt;String, String&gt; dataMap = new HashMap&lt;String, String&gt;();
+	 *		dataMap.put("first", "测试的");
+	 * 		dataMap.put("tradeDateTime", "我是时间");
+	 * 	</pre>
+	 * @param url 点击消息跳转到的url，如果不需要点击跳转，则传入 null
+	 * @param miniprogram 用户点击这条消息跳到小程序所需数据，这个map固定就是appid、pagepath这两个参数。 如果不需跳小程序，可不用传该数据，传入null即可
+	 * 	<pre>
+	 * 		Map&lt;String, String&gt; miniprogram = new HashMap&lt;String, String&gt;();
+	 *		miniprogram.put("appid", "xiaochengxuappid12345"); // 小程序的appid
+	 * 		miniprogram.put("pagepath", "index?foo=bar");	//打开小程序的页面
+	 * 	</pre>
+	 * @return {@link BaseVO} 如果 result() 为 BaseVO.SUCCESS ，那么是成功。 如果是 BaseVO.FAILURE ，可以用 getInfo() 获得失败原因 
+	 */
+	public BaseVO sendTemplateMessage(String templateId, String openid, Map<String, String> dataMap, String url, Map<String, String> miniprogram){
+		JSONObject json = new JSONObject();
+		json.put("touser", openid);	//护理美容
+		json.put("template_id", templateId);
+		if(url != null && url.length() > 0){
+			json.put("url", url);
+		}
+		if(miniprogram != null) {
+			JSONObject miniProgramJson = JSONObject.fromObject(miniprogram);
+			json.put("miniprogram", miniProgramJson);
+		}
+		
+		JSONObject dataJson = new JSONObject();
+		for(Map.Entry<String, String> entry : dataMap.entrySet()){
+			JSONObject item = new JSONObject();
+			item.put("value", entry.getValue());
+			dataJson.put(entry.getKey(), item);
+		}
+		json.put("data", dataJson);
+		
+		AccessToken at = getAccessToken();
+		if(at == null) {
+			return BaseVO.failure("自动获取token失败，请检查appid、appsercrt是否传入错误，或者你电脑或者服务器ip未加入白名单(登录微信公众平台，再设置与开发-基本设置里)");
+		}
+		
+		return TemplateMessageUtil.sendMessage(at.getAccess_token(), json.toString());
+	}
+	
 	@Override
 	public String toString() {
 		return "WeiXinUtil [debug=" + debug + ", accessToken=" + accessToken + ", jsapiTicket=" + jsapiTicket
