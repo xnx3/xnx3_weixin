@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
 	<groupId>com.xnx3.weixin</groupId>
 	<artifactId>xnx3-weixin</artifactId>
-	<version>1.6</version>
+	<version>1.7</version>
 	<packaging>jar</packaging>
 
 	<name>xnx3-weixin</name>
@@ -69,7 +69,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 		    <artifactId>bcprov-jdk15on</artifactId>
 		    <version>1.65</version>
 		</dependency>
-				
+		
+		<!-- http/https请求工具 https://github.com/xnx3/http.java -->
+		<dependency> 
+			<groupId>cn.zvo.http</groupId>
+			<artifactId>http</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
     </dependencies>
 
 

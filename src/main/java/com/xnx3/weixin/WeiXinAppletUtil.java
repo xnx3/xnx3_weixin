@@ -20,18 +20,21 @@ import javax.crypto.spec.SecretKeySpec;
 import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
 import com.xnx3.media.ImageUtil;
-import com.xnx3.net.HttpResponse;
-import com.xnx3.net.HttpsUtil;
+//import com.xnx3.net.HttpResponse;
+//import com.xnx3.net.HttpsUtil;
 import com.xnx3.weixin.bean.AccessToken;
 import com.xnx3.weixin.vo.Jscode2sessionResultVO;
 import com.xnx3.weixin.vo.PhoneVO;
+
+import cn.zvo.http.Http;
+import cn.zvo.http.Response;
 
 /**
  * 微信小程序
  * @author 管雷鸣
  */
 public class WeiXinAppletUtil implements java.io.Serializable{
-	static HttpsUtil https;
+	static Http http;
 	
 	//获取普通access_token的url
 	public static String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";	
@@ -46,7 +49,7 @@ public class WeiXinAppletUtil implements java.io.Serializable{
 	public boolean debug = true;	//调试日志是否打印
 	
 	static{
-		https = new HttpsUtil();
+		http = new Http();
 	}
 	
 	/**
@@ -72,16 +75,24 @@ public class WeiXinAppletUtil implements java.io.Serializable{
 	public Jscode2sessionResultVO jscode2session(String code){
 		Jscode2sessionResultVO vo = new Jscode2sessionResultVO();
 		
-		HttpsUtil https = new HttpsUtil();
-		HttpResponse hr = https.get("https://api.weixin.qq.com/sns/jscode2session?appid="+appId+"&secret="+appSecret+"&js_code="+code+"&grant_type=authorization_code");
-		if(hr.getCode() - 200 == 0 && hr.getContent() != null && hr.getContent().indexOf("session_key") > -1){
-			JSONObject json = JSONObject.fromObject(hr.getContent());
-			vo.setOpenid(json.get("openid") == null? "":json.getString("openid"));
-			vo.setUnionid(json.get("unionid") == null ? "":json.getString("unionid"));
-			vo.setSessionKey(json.get("session_key") == null? "":json.getString("session_key"));
-		}else{
-			vo.setBaseVO(BaseVO.FAILURE, hr.getContent());
+//		HttpsUtil https = new HttpsUtil();
+		Http http = new Http();
+		Response res;
+		try {
+			res = http.get("https://api.weixin.qq.com/sns/jscode2session?appid="+appId+"&secret="+appSecret+"&js_code="+code+"&grant_type=authorization_code");
+			if(res.getCode() - 200 == 0 && res.getContent() != null && res.getContent().indexOf("session_key") > -1){
+				JSONObject json = JSONObject.fromObject(res.getContent());
+				vo.setOpenid(json.get("openid") == null? "":json.getString("openid"));
+				vo.setUnionid(json.get("unionid") == null ? "":json.getString("unionid"));
+				vo.setSessionKey(json.get("session_key") == null? "":json.getString("session_key"));
+			}else{
+				vo.setBaseVO(BaseVO.FAILURE, res.getContent());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			vo.setBaseVO(BaseVO.FAILURE, e.getMessage());
 		}
+		
 		return vo;
 	}
 	
@@ -216,17 +227,25 @@ public class WeiXinAppletUtil implements java.io.Serializable{
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshAccessToken(){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
-		HttpResponse httpResponse = httpUtil.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
-		if(json.get("errcode") == null){
-			//没有出错，获取access_token成功
-			accessToken.setAccess_token(json.getString("access_token"));
-			accessToken.setExpires_in(json.getInt("expires_in"));
-			accessToken.setGainTime(DateUtil.timeForUnix10());
-			return true;
-		}else{
-			debug("获取access_token失败！返回值："+httpResponse.getContent());
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+		Http http = new Http();
+		Response res;
+		try {
+			res = http.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
+			JSONObject json = JSONObject.fromObject(res.getContent());
+			if(json.get("errcode") == null){
+				//没有出错，获取access_token成功
+				accessToken.setAccess_token(json.getString("access_token"));
+				accessToken.setExpires_in(json.getInt("expires_in"));
+				accessToken.setGainTime(DateUtil.timeForUnix10());
+				return true;
+			}else{
+				debug("获取access_token失败！返回值："+res.getContent());
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			debug("获取access_token失败！异常："+e.getMessage());
 			return false;
 		}
 	}
@@ -268,12 +287,14 @@ public class WeiXinAppletUtil implements java.io.Serializable{
 		}
 		json.put("data", dataJson);
 		
-		HttpResponse hr;
+		Response res;
 		try {
-			hr = https.send("https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token="+getAccessToken().getAccess_token(), json.toString(), new HashMap<String, String>());
-			if(hr.getCode() - 200 == 0){
+			res = http.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token="+getAccessToken().getAccess_token(), json.toString(), new HashMap<String, String>());
+			
+//			res = http.send("https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token="+getAccessToken().getAccess_token(), json.toString(), new HashMap<String, String>(), new HashMap<String, String>());
+			if(res.getCode() - 200 == 0){
 				//响应200，拿到数据了，将数据格式化
-				JSONObject resultJson = JSONObject.fromObject(hr.getContent());
+				JSONObject resultJson = JSONObject.fromObject(res.getContent());
 				Object errcode = resultJson.get("errcode");
 				if(errcode != null && errcode.toString().equals("0")){
 					Object msgid = resultJson.get("msgid");
@@ -283,9 +304,9 @@ public class WeiXinAppletUtil implements java.io.Serializable{
 					}
 				}
 				
-				return BaseVO.failure(hr.getContent());
+				return BaseVO.failure(res.getContent());
 			}else{
-				return BaseVO.failure("weixin server response http code:"+hr.getCode()+"，"+hr.getContent());
+				return BaseVO.failure("weixin server response http code:"+res.getCode()+"，"+res.getContent());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
