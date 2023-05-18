@@ -1,4 +1,24 @@
-# 微信常用工具类
+微信常用工具类
+
+# 快速入门使用
+### 1. maven导入
+
+````
+<dependency>
+    <groupId>com.xnx3.weixin</groupId>
+    <artifactId>xnx3-weixin</artifactId>
+    <version>1.7</version>
+</dependency>
+````
+
+### 2. 写一个类测试
+
+````
+public static void main(String[] args) {
+	WeiXinUtil weixin = new WeiXinUtil("你的 appId", "你的 appSecret");
+	System.out.println("获取 access_token ："+weixin.getAccessToken());
+}
+````
 
 # 微信支付
 ### 微信内网页H5支付
