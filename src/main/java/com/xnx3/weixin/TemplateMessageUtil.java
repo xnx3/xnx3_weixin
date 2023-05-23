@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.xnx3.BaseVO;
-import com.xnx3.net.HttpResponse;
-import com.xnx3.net.HttpsUtil;
+import com.xnx3.HttpResponse;
+
+import cn.zvo.http.Http;
+import cn.zvo.http.Response;
 import net.sf.json.JSONObject;
 
 /**
@@ -17,21 +19,24 @@ import net.sf.json.JSONObject;
  * @deprecated
  */
 public class TemplateMessageUtil {
-	static HttpsUtil https;
+//	static HttpsUtil https;
+	static Http http;
 	static{
-		https = new HttpsUtil();
+//		https = new HttpsUtil();
+		http = new Http();
 	}
 	
 	public static void main(String[] args) {
-		String token = "33_OcuF70QVeNIoozqpAaFPlhdRq42K_HGxa4i1L-eax7NOoUTErAgMGJeu0L9qT1iGlNCB5qsd-3_nlyANnDaQm7y2lH5eskaE8WW1v--sbURNoTDDQ2NGJduaBzVUwOQwijaLgmi6gZvd-dyNROJeAHADAV";
-		String openid = "oa04fwGxDJsbIzzfwp4VPEBNGMd";
-		String templateId = "BBN1yKFB3lZPqGAikXoOrBV80we32SIEVb_T0hmn4J";
+		String token = "68_T5ELwiFB-ydler_xGcJkOgWutGPC79pLolX6FcewHiQs4YRIevpZXbCYvz4Yo5xn-mcADt2BnPlPqNlB7TziiT1FoiCCB9_RFQQT6IDrGMOHOv0jlUNSF06UUP0QMHgAAACYT";
+		String openid = "oTMwI6gC0a-vxiCEUbxaRjuDovmw";
+		String templateId = "GCVpDodeS-cEE9tbuNle87uRPiUFW5PiuQUe3K1Fgns";
 		String url = "http://www.leimingyun.com";	//如果不想点击后跳转， url 可以设置为 null
 		Map<String, String> dataMap = new HashMap<String, String>();
 		dataMap.put("first", "测试的");
-		dataMap.put("tradeDateTime", "02月18日 01时05分");
-		dataMap.put("orderType", "询价订单");
-		dataMap.put("customerInfo", "管雷鸣");
+		dataMap.put("keyword1", "02月18日 01时05分");
+		dataMap.put("keyword2", "询价订单");
+		dataMap.put("keyword3", "管雷鸣");
+		dataMap.put("remark", "管雷鸣");
 		BaseVO vo = TemplateMessageUtil.sendMessage(token, openid, templateId, url, dataMap);
 		System.out.println(vo);
 	}
@@ -117,12 +122,29 @@ public class TemplateMessageUtil {
 	 * @return {@link BaseVO} 如果 result() 为 BaseVO.SUCCESS ，那么是成功。 如果是 BaseVO.FAILURE ，可以用 getInfo() 获得失败原因
 	 */
 	public static BaseVO sendMessage(String accessToken, String jsonString){
-		HttpResponse hr;
+//		HttpResponse hr;
+		Response res;
 		try {
-			hr = https.send("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken, jsonString, new HashMap<String, String>());
-			if(hr.getCode() - 200 == 0){
+			String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken;
+			
+			Map<String, String> headers = new HashMap<String, String>();
+			headers.put("Content-Type", "application/x-www-form-urlencoded");
+			
+//			com.xnx3.HttpsUtil https = new com.xnx3.HttpsUtil();
+//			System.out.println(jsonString);
+//			String s = https.post("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken, jsonString);
+//			System.out.println(s);
+//			HttpResponse hr = https.send(url, jsonString, new HashMap<String, String>());
+//			System.out.println(hr);
+			
+//			Response re = http.put(url, jsonString, new HashMap<String, String>());
+//			System.out.println(re);
+			
+			res = http.post(url, jsonString, headers);
+//			res = https.send("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken, jsonString, new HashMap<String, String>());
+			if(res.getCode() - 200 == 0){
 				//响应200，拿到数据了，将数据格式化
-				JSONObject resultJson = JSONObject.fromObject(hr.getContent());
+				JSONObject resultJson = JSONObject.fromObject(res.getContent());
 				Object errcode = resultJson.get("errcode");
 				if(errcode != null && errcode.toString().equals("0")){
 					Object msgid = resultJson.get("msgid");
@@ -133,13 +155,13 @@ public class TemplateMessageUtil {
 				}else {
 					//失败
 					if(errcode != null && errcode.toString().equals("40013")){
-						return BaseVO.failure("公众号需要和小程序关联，才可以进行跳转，不然即使写了跳转参数，也直接会报错 invalid appid. 接口响应："+hr.getContent());
+						return BaseVO.failure("公众号需要和小程序关联，才可以进行跳转，不然即使写了跳转参数，也直接会报错 invalid appid. 接口响应："+res.getContent());
 					}
 				}
 				
-				return BaseVO.failure(hr.getContent());
+				return BaseVO.failure(res.getContent());
 			}else{
-				return BaseVO.failure("weixin server response http code:"+hr.getCode()+"，"+hr.getContent());
+				return BaseVO.failure("weixin server response http code:"+res.getCode()+"，"+res.getContent());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
