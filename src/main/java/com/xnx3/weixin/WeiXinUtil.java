@@ -6,16 +6,17 @@ package com.xnx3.weixin;
 //import org.dom4j.Element;
 import net.sf.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Map;
-
 import com.xnx3.BaseVO;
 import com.xnx3.DateUtil;
 import com.xnx3.StringUtil;
-import com.xnx3.net.HttpResponse;
 import com.xnx3.weixin.bean.AccessToken;
 import com.xnx3.weixin.bean.JsapiTicket;
 import com.xnx3.weixin.bean.SignatureBean;
 import com.xnx3.weixin.bean.UserInfo;
+import cn.zvo.http.Http;
+import cn.zvo.http.Response;
 
 /**
  * 微信公众号的基本操作-不涉及小程序。微信小程序使用 {@link WeiXinAppletUtil}
@@ -31,6 +32,8 @@ public class WeiXinUtil implements java.io.Serializable{
 	
 	public static int ACCESS_TOKEN_DELAY_TIME = 5000;	//access_token获取后使用的时长，单位为秒，官方给出的access_token获取后最大有效时间是7200秒，一个access_token的有效期最大只能是7200秒之内有效，超出后就要重新获取。这里设定获取到access_token后最大持续5000秒，超过后便再次获取新的access_token
 	public static int JSAPI_TICKET_DELAY_TIME = 5000;	//jsapi_ticket获取后使用的时长，单位为秒
+	
+	public static Http http;
 	
 	/**
 	 * 持久化的 JsapiTicket 数据，用于JS SDK。
@@ -60,6 +63,8 @@ public class WeiXinUtil implements java.io.Serializable{
 		this.appId = appId;
 		this.appSecret = appSecret;
 		this.token = token;
+		
+		http = new Http();
 	}
 	
 	/**
@@ -114,10 +119,18 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * 			</ul>
 	 */
 	public UserInfo getUserInfo(String openId){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
 		UserInfo userInfo = null;
-		HttpResponse httpResponse = httpUtil.get(USER_INFO_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()).replace("OPENID", openId));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+//		HttpResponse httpResponse = httpUtil.get(USER_INFO_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()).replace("OPENID", openId));
+		Response response;
+		try {
+			response = http.get(USER_INFO_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()).replace("OPENID", openId));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		JSONObject json = JSONObject.fromObject(response.getContent());
+		
 		if(json.get("subscribe") != null){
 			userInfo = new UserInfo();
 			userInfo.setSubscribe(json.getString("subscribe").equals("1"));
@@ -139,7 +152,7 @@ public class WeiXinUtil implements java.io.Serializable{
 				userInfo.setQrSceneStr(json.getString("qr_scene_str"));
 			}
 		}else{
-			debug("获取用户信息失败！用户openid:"+openId+"，微信回执："+httpResponse.getContent());
+			debug("获取用户信息失败！用户openid:"+openId+"，微信回执："+response.getContent());
 		}
 		
 		return userInfo;
@@ -150,9 +163,16 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshAccessToken(){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
-		HttpResponse httpResponse = httpUtil.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+//		HttpResponse httpResponse = httpUtil.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
+		Response response = null;
+		try {
+			response = http.get(ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("APPSECRET", this.appSecret));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		JSONObject json = JSONObject.fromObject(response.getContent());
 		if(json.get("errcode") == null){
 			//没有出错，获取access_token成功
 			accessToken.setAccess_token(json.getString("access_token"));
@@ -165,7 +185,7 @@ public class WeiXinUtil implements java.io.Serializable{
 			if(errcode - 40164 == 0){
 				debug("需要登录微信公众平台，找到左侧菜单的开发-基本配置 ，点开，找到其中的 公众号开发信息 - IP白名单，将您的ip加入其中，即可解决此错误");
 			}
-			debug("获取access_token失败！返回值："+httpResponse.getContent());
+			debug("获取access_token失败！返回值："+response.getContent());
 			return false;
 		}
 	}
@@ -205,14 +225,21 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @return 用户openid 若为null，则获取失败
 	 */
 	public String getOauth2OpenId(String code){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
-		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+//		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
+		Response response = null;
+		try {
+			response = http.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		JSONObject json = JSONObject.fromObject(response.getContent());
 		if(json.get("errcode") == null){
 			//没有出错，获取网页access_token成功
 			return json.getString("openid");
 		}else{
-			debug("获取网页授权access_token失败！返回值："+httpResponse.getContent());
+			debug("获取网页授权access_token失败！返回值："+response.getContent());
 		}
 		
 		return null;
@@ -228,12 +255,26 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * 		</ul>
 	 */
 	public UserInfo getOauth2UserInfo(String code){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
-		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+//		HttpResponse httpResponse = httpUtil.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
+		Response response = null;
+		try {
+			response = http.get(OAUTH2_ACCESS_TOKEN_URL.replace("APPID", this.appId).replace("SECRET", this.appSecret).replace("CODE", code));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		JSONObject json = JSONObject.fromObject(response.getContent());
 		if(json.get("errcode") == null){
 			//没有出错，获取网页access_token成功
-			HttpResponse res = httpUtil.get(OAUTH2_USER_INFO_URL.replace("ACCESS_TOKEN", json.getString("access_token")).replace("OPENID", json.getString("openid")));
+//			HttpResponse res = httpUtil.get(OAUTH2_USER_INFO_URL.replace("ACCESS_TOKEN", json.getString("access_token")).replace("OPENID", json.getString("openid")));
+			Response res;
+			try {
+				res = http.get(OAUTH2_USER_INFO_URL.replace("ACCESS_TOKEN", json.getString("access_token")).replace("OPENID", json.getString("openid")));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
 			JSONObject j = JSONObject.fromObject(res.getContent());
 			if(j.get("errcode") == null){
 				UserInfo userInfo = new UserInfo();
@@ -250,7 +291,7 @@ public class WeiXinUtil implements java.io.Serializable{
 				debug("获取网页授权用户信息失败！返回值："+res.getContent());
 			}
 		}else{
-			debug("获取网页授权access_token失败！返回值："+httpResponse.getContent());
+			debug("获取网页授权access_token失败！返回值："+response.getContent());
 		}
 		
 		return null;
@@ -464,9 +505,16 @@ public class WeiXinUtil implements java.io.Serializable{
 	 * @return 获取成功|失败
 	 */
 	private boolean refreshJsapiTicket(){
-		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
-		HttpResponse httpResponse = httpUtil.get(JSAPI_TICKET_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()));
-		JSONObject json = JSONObject.fromObject(httpResponse.getContent());
+//		com.xnx3.net.HttpUtil httpUtil = new com.xnx3.net.HttpUtil();
+//		HttpResponse httpResponse = httpUtil.get(JSAPI_TICKET_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()));
+		Response response;
+		try {
+			response = http.get(JSAPI_TICKET_URL.replace("ACCESS_TOKEN", getAccessToken().getAccess_token()));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		JSONObject json = JSONObject.fromObject(response.getContent());
 		if(json.get("errcode") != null && json.getInt("errcode") == 0){
 			//没有出错，获取成功
 			jsapiTicket.setExpires_in(json.getInt("expires_in"));
@@ -475,7 +523,7 @@ public class WeiXinUtil implements java.io.Serializable{
 			debug("refreshJsapiTicket:"+jsapiTicket.toString());
 			return true;
 		}else{
-			debug("获取access_token失败！返回值："+httpResponse.getContent());
+			debug("获取access_token失败！返回值："+response.getContent());
 			return false;
 		}
 	}

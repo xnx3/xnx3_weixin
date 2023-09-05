@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.xnx3.BaseVO;
-import com.xnx3.HttpResponse;
+//import com.xnx3.HttpResponse;
 
 import cn.zvo.http.Http;
 import cn.zvo.http.Response;
