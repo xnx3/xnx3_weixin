@@ -34,6 +34,9 @@ public class WeiXinUtil implements java.io.Serializable{
 	public static int JSAPI_TICKET_DELAY_TIME = 5000;	//jsapi_ticket获取后使用的时长，单位为秒
 	
 	public static Http http;
+	static {
+		http = new Http();
+	}
 	
 	/**
 	 * 持久化的 JsapiTicket 数据，用于JS SDK。
@@ -63,8 +66,6 @@ public class WeiXinUtil implements java.io.Serializable{
 		this.appId = appId;
 		this.appSecret = appSecret;
 		this.token = token;
-		
-		http = new Http();
 	}
 	
 	/**
