@@ -7,7 +7,7 @@
 <dependency>
     <groupId>com.xnx3.weixin</groupId>
     <artifactId>xnx3-weixin</artifactId>
-    <version>1.7</version>
+    <version>1.8.1</version>
 </dependency>
 ````
 
